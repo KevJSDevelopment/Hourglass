@@ -8,38 +8,42 @@ namespace LimiterMessaging
 {
     public partial class MainForm : Form
     {
-        protected override void OnLoad(EventArgs e)
+        public MainForm(string message)
         {
-            base.OnLoad(e);
-            Task.Run(ListenForMessages);
-        }
+            // Set up the form
+            this.Text = "Usage Warning";
+            this.StartPosition = FormStartPosition.CenterScreen;
+            this.FormBorderStyle = FormBorderStyle.FixedDialog;
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
 
-        private async Task ListenForMessages()
-        {
-            while (true)
+            // Create and set up a label to display the message
+            Label lblMessage = new Label
             {
-                using (var server = new NamedPipeServerStream("LimiterMessagingPipe", PipeDirection.In))
-                {
-                    await server.WaitForConnectionAsync();
+                Text = message,
+                AutoSize = true,
+                Location = new System.Drawing.Point(10, 10),
+                MaximumSize = new System.Drawing.Size(280, 0)
+            };
 
-                    using (var reader = new StreamReader(server))
-                    {
-                        string message = await reader.ReadLineAsync();
-                        if (!string.IsNullOrEmpty(message))
-                        {
-                            this.Invoke((MethodInvoker)delegate
-                            {
-                                ShowWarningMessage(message);
-                            });
-                        }
-                    }
-                }
-            }
-        }
+            // Create and set up an OK button
+            Button btnOk = new Button
+            {
+                Text = "OK",
+                DialogResult = DialogResult.OK,
+                Location = new System.Drawing.Point(100, lblMessage.Bottom + 20)
+            };
+            btnOk.Click += (sender, e) => this.Close();
 
-        private void ShowWarningMessage(string message)
-        {
-            MessageBox.Show(this, message, "Usage Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            // Add controls to the form
+            this.Controls.Add(lblMessage);
+            this.Controls.Add(btnOk);
+
+            // Set the form size
+            this.ClientSize = new System.Drawing.Size(300, btnOk.Bottom + 10);
+
+            // Show the form
+            this.ShowDialog();
         }
     }
 }

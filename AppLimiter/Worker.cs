@@ -13,9 +13,8 @@ namespace AppLimiter
         public Worker(ILogger<Worker> logger)
         {
             _logger = logger;
-            _appLimits["leagueclient"] = TimeSpan.FromSeconds(10);
-            _appLimits["leagueclientwarning"] = TimeSpan.FromMinutes(3);
-            // Add more apps and their limits as needed
+            _appLimits["leagueclient"] = TimeSpan.FromMinutes(150);
+            _appLimits["leagueclientwarning"] = TimeSpan.FromMinutes(120);
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -24,7 +23,7 @@ namespace AppLimiter
             {
                 TrackAppUsage();
                 EnforceUsageLimits();
-                await Task.Delay(1000, stoppingToken); // Check every second
+                await Task.Delay(1000, stoppingToken);
             }
         }
 
@@ -46,15 +45,15 @@ namespace AppLimiter
             }
         }
 
-        private async Task EnforceUsageLimits()
+        private void EnforceUsageLimits()
         {
             foreach (var app in _appUsage.Keys.ToList())
             {
                 if (_appUsage[app] >= _appLimits[app])
                 {
-                    if(app.ToLower().Contains("warning"))
+                    if(app.ToLower().Contains("warning") && !_warningShown)
                     {
-                        await ShowWarningMessage();
+                        ShowWarningMessage();
                         _warningShown = true;
                     }
 
@@ -75,26 +74,24 @@ namespace AppLimiter
             }
         }
 
-        private async Task ShowWarningMessage()
+        private void ShowWarningMessage()
         {
             string warningMessage = "WARNING: You have been playing League of Legends for 90 minutes. The application will close in 30 minutes.";
             _logger.LogWarning(warningMessage);
 
-            using (var client = new NamedPipeClientStream(".", "LimiterMessagingPipe", PipeDirection.Out))
+            try
             {
-                try
+                // Launch the WinForms application
+                Process.Start(new ProcessStartInfo
                 {
-                    await client.ConnectAsync(5000); // Wait up to 5 seconds
-                    using (var writer = new StreamWriter(client))
-                    {
-                        await writer.WriteLineAsync(warningMessage);
-                        await writer.FlushAsync();
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Failed to send message to LimiterMessaging application.");
-                }
+                    FileName = "..\\LimiterMessaging\\bin\\Debug\\net8.0-windows\\LimiterMessaging.exe",
+                    Arguments = $"\"{warningMessage}\"",
+                    UseShellExecute = true
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to launch LimiterMessaging application.");
             }
         }
     }
