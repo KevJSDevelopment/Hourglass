@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.10.35122.118
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppLimiter", "AppLimiter\AppLimiter.csproj", "{D96A7E0D-C131-4DF0-8466-CD17567A6F52}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AppLimiter", "AppLimiter\AppLimiter.csproj", "{D96A7E0D-C131-4DF0-8466-CD17567A6F52}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LimiterMessaging", "LimiterMessaging\LimiterMessaging.csproj", "{44FE3B46-3F19-418F-9E22-FCC76AA85140}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{D96A7E0D-C131-4DF0-8466-CD17567A6F52}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D96A7E0D-C131-4DF0-8466-CD17567A6F52}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D96A7E0D-C131-4DF0-8466-CD17567A6F52}.Release|Any CPU.Build.0 = Release|Any CPU
+		{44FE3B46-3F19-418F-9E22-FCC76AA85140}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{44FE3B46-3F19-418F-9E22-FCC76AA85140}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{44FE3B46-3F19-418F-9E22-FCC76AA85140}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{44FE3B46-3F19-418F-9E22-FCC76AA85140}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
