@@ -86,6 +86,9 @@ namespace ProcessLimiterManager
             // Check for specific launchers
             CheckForLaunchers();
 
+            // Add all applications that were added manually
+            CheckForPersistedApplications();
+
             // Display applications in ListView
             foreach (var app in applications)
             {
@@ -94,6 +97,36 @@ namespace ProcessLimiterManager
                 item.SubItems.Add(app.WarningTime);
                 item.SubItems.Add(app.KillTime);
                 listViewApplications.Items.Add(item);
+            }
+        }
+
+        private void CheckForPersistedApplications()
+        {
+            string filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "AppLimiter", "AddedApplications.json");
+
+            if (File.Exists(filePath))
+            {
+                try
+                {
+                    string json = File.ReadAllText(filePath);
+                    var persistedApps = JsonSerializer.Deserialize<List<ProcessInfo>>(json);
+
+                    if (persistedApps != null)
+                    {
+                        foreach (var app in persistedApps)
+                        {
+                            if (!addedExecutables.Contains(app.Executable))
+                            {
+                                applications.Add(app);
+                                addedExecutables.Add(app.Executable);
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error loading persisted applications: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             }
         }
 
@@ -198,6 +231,16 @@ namespace ProcessLimiterManager
                     KillTime = "00:00:00"
                 });
             }
+            PersistApplicationsAdded();
+        }
+
+        private void PersistApplicationsAdded()
+        {
+            string json = JsonSerializer.Serialize(applications, new JsonSerializerOptions { WriteIndented = true });
+            string filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "AppLimiter", "AddedApplications.json");
+
+            Directory.CreateDirectory(Path.GetDirectoryName(filePath));
+            File.WriteAllText(filePath, json);
         }
 
         private string FindExecutableInDirectory(string directory)
@@ -299,7 +342,7 @@ namespace ProcessLimiterManager
 
         private void SaveLimits()
         {
-            var limits = applications.Where(a => TimeSpan.Parse(a.WarningTime) > TimeSpan.Zero || TimeSpan.Parse(a.KillTime) > TimeSpan.Zero)
+            var limits = applications.Where(a => TimeSpan.Parse(a.WarningTime) >= TimeSpan.Zero || TimeSpan.Parse(a.KillTime) >= TimeSpan.Zero)
                                      .Select(a => new ProcessInfo
                                      {
                                          Name = a.Name,
