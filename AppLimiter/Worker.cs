@@ -1,13 +1,16 @@
+using System.Data.SqlClient;
 using System.Diagnostics;
 using System.IO.Pipes;
 using System.Text.Json;
 using AppLimiterLibrary;
+using Microsoft.Extensions.Configuration;
 
 namespace AppLimiter
 {
     public class Worker : BackgroundService
     {
         private readonly ILogger<Worker> _logger;
+        private readonly string _connectionString;
         private readonly Dictionary<string, TimeSpan> _appUsage = new Dictionary<string, TimeSpan>();
         private readonly Dictionary<string, TimeSpan> _appLimits = new Dictionary<string, TimeSpan>();
         private readonly Dictionary<string, string> _processToExecutableMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -15,13 +18,15 @@ namespace AppLimiter
         private FileSystemWatcher _watcher;
         private string _configPath;
 
-        public Worker(ILogger<Worker> logger)
+        public Worker(ILogger<Worker> logger, IConfiguration configuration)
         {
             _logger = logger;
+            _connectionString = configuration.GetConnectionString("DefaultConnection");
             _configPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "AppLimiter", "ProcessLimits.json");
             InitializeFileWatcher();
             InitializeProcessMap();
         }
+
         private void InitializeProcessMap()
         {
             // Add known mappings here
@@ -44,15 +49,32 @@ namespace AppLimiter
             _watcher.Changed += OnConfigFileChanged;
         }
 
+        public SqlConnection GetConnection()
+        {
+            return new SqlConnection(_connectionString);
+        }
+
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             LoadAndApplyLimits(); // Initial load
 
             while (!stoppingToken.IsCancellationRequested)
             {
-                TrackAppUsage();
-                EnforceUsageLimits();
-                await Task.Delay(1000, stoppingToken);
+                using (var connection = GetConnection())
+                {
+                    try
+                    {
+                        await connection.OpenAsync(stoppingToken);
+                        _logger.LogInformation("Database connection successful");
+                        // Perform your database operations here
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error connecting to the database");
+                    }
+                }
+
+                await Task.Delay(TimeSpan.FromMinutes(5), stoppingToken);
             }
         }
 
