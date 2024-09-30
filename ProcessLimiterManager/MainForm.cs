@@ -77,15 +77,6 @@ namespace ProcessLimiterManager
             applications.Clear();
             addedExecutables.Clear();
 
-            // Scan registry (keep existing code)
-            //ScanRegistry();
-
-            // Scan common game directories
-            ScanGameDirectories();
-
-            // Check for specific launchers
-            CheckForLaunchers();
-
             // Add all applications that were added manually
             CheckForPersistedApplications();
 
@@ -130,96 +121,7 @@ namespace ProcessLimiterManager
             }
         }
 
-        /*private void ScanRegistry()
-        {
-            string[] registryKeys = { @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall", @"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall" };
-
-            foreach (string registryKey in registryKeys)
-            {
-                using (RegistryKey key = Registry.LocalMachine.OpenSubKey(registryKey))
-                {
-                    if (key != null)
-                    {
-                        foreach (string subkey_name in key.GetSubKeyNames())
-                        {
-                            using (RegistryKey subkey = key.OpenSubKey(subkey_name))
-                            {
-                                string displayName = subkey.GetValue("DisplayName") as string;
-                                string installLocation = subkey.GetValue("InstallLocation") as string;
-                                if (!string.IsNullOrEmpty(displayName) && !string.IsNullOrEmpty(installLocation))
-                                {
-                                    string executable = FindExecutableInDirectory(installLocation);
-                                    if (!string.IsNullOrEmpty(executable) && addedExecutables.Add(executable))
-                                    {
-                                        var app = new ProcessInfo
-                                        {
-                                            Name = displayName,
-                                            WarningTime = "00:00:00",
-                                            KillTime = "00:00:00",
-                                            Executable = executable
-                                        };
-                                        applications.Add(app);
-
-                                        var item = new ListViewItem(displayName);
-                                        item.SubItems.Add(executable);
-                                        item.SubItems.Add("00:00:00");  // Warning Time
-                                        item.SubItems.Add("00:00:00");  // Kill Time
-                                        listViewApplications.Items.Add(item);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        */
-        private void ScanGameDirectories()
-        {
-            string[] commonDirectories = {
-                @"C:\Program Files (x86)\Steam\steamapps\common",
-                @"C:\Program Files\Epic Games",
-                @"C:\Riot Games",
-                @"C:\Program Files (x86)\Origin Games"
-                // Add more directories as needed
-            };
-
-            foreach (string directory in commonDirectories)
-            {
-                if (Directory.Exists(directory))
-                {
-                    foreach (string subDir in Directory.GetDirectories(directory))
-                    {
-                        string executable = FindExecutableInDirectory(subDir);
-                        if (!string.IsNullOrEmpty(executable))
-                        {
-                            AddApplication(Path.GetFileNameWithoutExtension(subDir), executable);
-                        }
-                    }
-                }
-            }
-        }
-
-        private void CheckForLaunchers()
-        {
-            string[] launchers = {
-                @"C:\Program Files (x86)\Steam\steam.exe",
-                @"C:\Program Files (x86)\Epic Games\Launcher\Portal\Binaries\Win32\EpicGamesLauncher.exe",
-                @"C:\Riot Games\Riot Client\RiotClientServices.exe",
-                @"C:\Program Files (x86)\Origin\Origin.exe"
-                // Add more launchers as needed
-            };
-
-            foreach (string launcher in launchers)
-            {
-                if (File.Exists(launcher))
-                {
-                    AddApplication(Path.GetFileNameWithoutExtension(launcher), launcher);
-                }
-            }
-        }
-
-        private void AddApplication(string name, string executable)
+        private async Task AddApplication(string name, string executable)
         {
             if (addedExecutables.Add(executable))
             {
@@ -231,16 +133,18 @@ namespace ProcessLimiterManager
                     KillTime = "00:00:00"
                 });
             }
-            PersistApplicationsAdded();
+            await PersistApplicationsAdded();
         }
 
-        private void PersistApplicationsAdded()
+        private async Task<string> PersistApplicationsAdded()
         {
             string json = JsonSerializer.Serialize(applications, new JsonSerializerOptions { WriteIndented = true });
             string filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "AppLimiter", "AddedApplications.json");
 
             Directory.CreateDirectory(Path.GetDirectoryName(filePath));
             File.WriteAllText(filePath, json);
+
+            return filePath;
         }
 
         private string FindExecutableInDirectory(string directory)
@@ -295,7 +199,7 @@ namespace ProcessLimiterManager
             Console.WriteLine(applications);
         }
 
-        private void btnAddApplication_Click(object sender, EventArgs e)
+        private async void btnAddApplication_Click(object sender, EventArgs e)
         {
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
             {
@@ -305,7 +209,7 @@ namespace ProcessLimiterManager
                 if (openFileDialog.ShowDialog() == DialogResult.OK)
                 {
                     string name = Path.GetFileNameWithoutExtension(openFileDialog.FileName);
-                    AddApplication(name, openFileDialog.FileName);
+                    await AddApplication(name, openFileDialog.FileName);
 
                     // Refresh the ListView
                     LoadApplications();
