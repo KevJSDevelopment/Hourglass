@@ -17,6 +17,7 @@ namespace ProcessLimiterManager
         private Button btnRefresh;
         private Button btnSetLimits;
         private Button btnAddApplication;
+        private Button btnRemoveApplication;
 
         public MainForm()
         {
@@ -64,10 +65,18 @@ namespace ProcessLimiterManager
             };
             btnAddApplication.Click += btnAddApplication_Click;
 
+            btnRemoveApplication = new Button
+            {
+                Text = "Remove Application",
+                Dock = DockStyle.Bottom
+            };
+            btnRemoveApplication.Click += btnRemoveApplication_Click;
+
             this.Controls.Add(listViewApplications);
             this.Controls.Add(btnRefresh);
             this.Controls.Add(btnSetLimits);
             this.Controls.Add(btnAddApplication);
+            this.Controls.Add(btnRemoveApplication);
 
         }
 
@@ -133,6 +142,14 @@ namespace ProcessLimiterManager
                     KillTime = "00:00:00"
                 });
             }
+            await PersistApplicationsAdded();
+        }
+
+        private async Task RemoveApplication(string name)
+        {
+            var app = applications.Find(a => a.Name == name);
+            applications.Remove(app);
+
             await PersistApplicationsAdded();
         }
 
@@ -244,6 +261,16 @@ namespace ProcessLimiterManager
             }
         }
 
+        private async void btnRemoveApplication_Click(object sender, EventArgs e)
+        {
+            if(listViewApplications.SelectedItems.Count > 0)
+            {
+                var selectedApp = applications[listViewApplications.SelectedIndices[0]];
+                await RemoveApplication(selectedApp.Name);
+
+                LoadApplications();
+            }
+        }
         private void SaveLimits()
         {
             var limits = applications.Where(a => TimeSpan.Parse(a.WarningTime) >= TimeSpan.Zero || TimeSpan.Parse(a.KillTime) >= TimeSpan.Zero)
