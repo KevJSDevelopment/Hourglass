@@ -268,6 +268,7 @@ namespace ProcessLimiterManager
                 var selectedApp = applications[listViewApplications.SelectedIndices[0]];
                 await RemoveApplication(selectedApp.Name);
 
+                SaveLimits();
                 LoadApplications();
             }
         }

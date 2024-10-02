@@ -11,7 +11,7 @@ namespace LimiterMessaging
             string message = args.Length > 0 ? args[0] : "No message provided.";
 
             ApplicationConfiguration.Initialize();
-            Application.Run(new MainForm(message));
+            Application.Run(new LimiterMessagingForm(message));
         }
     }
 }

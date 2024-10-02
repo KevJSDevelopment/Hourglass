@@ -57,24 +57,25 @@ namespace AppLimiter
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             LoadAndApplyLimits(); // Initial load
+            using (var connection = GetConnection())
+            {
+                try
+                {
+                    await connection.OpenAsync(stoppingToken);
+                    _logger.LogInformation("Database connection successful");
+                    // Perform your database operations here
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error connecting to the database");
+                }
+            }
 
             while (!stoppingToken.IsCancellationRequested)
             {
-                using (var connection = GetConnection())
-                {
-                    try
-                    {
-                        await connection.OpenAsync(stoppingToken);
-                        _logger.LogInformation("Database connection successful");
-                        // Perform your database operations here
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Error connecting to the database");
-                    }
-                }
-
-                await Task.Delay(TimeSpan.FromMinutes(5), stoppingToken);
+                TrackAppUsage();
+                EnforceUsageLimits();
+                await Task.Delay(1000, stoppingToken);
             }
         }
 
