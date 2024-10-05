@@ -2,12 +2,12 @@
 {
     public class SetLimitForm : Form
     {
-        private TextBox txtWarningTimeHours;
-        private TextBox txtWarningTimeMinutes;
-        private TextBox txtWarningTimeSeconds;
-        private TextBox txtKillTimeHours;
-        private TextBox txtKillTimeMinutes;
-        private TextBox txtKillTimeSeconds;
+        private ComboBox cmbWarningTimeHours;
+        private ComboBox cmbWarningTimeMinutes;
+        private ComboBox cmbWarningTimeSeconds;
+        private ComboBox cmbKillTimeHours;
+        private ComboBox cmbKillTimeMinutes;
+        private ComboBox cmbKillTimeSeconds;
 
         public string WarningTime { get; private set; }
         public string KillTime { get; private set; }
@@ -15,29 +15,31 @@
         public SetLimitForm(string processName, string currentWarningTime, string currentKillTime)
         {
             Text = $"Set Limits for {processName}";
-            Size = new System.Drawing.Size(300, 250);  // Increased form size
+            Size = new System.Drawing.Size(400, 350);
 
             var lblWarning = new Label { Text = "Warning Time:", Left = 10, Top = 10, Width = 100 };
 
             var lblWarningHours = new Label { Text = "Hours:", Left = 10, Top = 35, Width = 40 };
-            txtWarningTimeHours = new TextBox { Left = 55, Top = 32, Width = 30 };
+            cmbWarningTimeHours = new ComboBox { Left = 55, Top = 32, Width = 50, DropDownStyle = ComboBoxStyle.DropDownList };
 
-            var lblWarningMinutes = new Label { Text = "Minutes:", Left = 95, Top = 35, Width = 50 };
-            txtWarningTimeMinutes = new TextBox { Left = 150, Top = 32, Width = 30 };
+            var lblWarningMinutes = new Label { Text = "Minutes:", Left = 115, Top = 35, Width = 50 };
+            cmbWarningTimeMinutes = new ComboBox { Left = 170, Top = 32, Width = 50, DropDownStyle = ComboBoxStyle.DropDownList };
 
-            var lblWarningSeconds = new Label { Text = "Seconds:", Left = 190, Top = 35, Width = 50 };
-            txtWarningTimeSeconds = new TextBox { Left = 245, Top = 32, Width = 30 };
+            var lblWarningSeconds = new Label { Text = "Seconds:", Left = 230, Top = 35, Width = 50 };
+            cmbWarningTimeSeconds = new ComboBox { Left = 285, Top = 32, Width = 50, DropDownStyle = ComboBoxStyle.DropDownList };
 
             var lblKill = new Label { Text = "Kill Time:", Left = 10, Top = 70, Width = 100 };
 
             var lblKillHours = new Label { Text = "Hours:", Left = 10, Top = 95, Width = 40 };
-            txtKillTimeHours = new TextBox { Left = 55, Top = 92, Width = 30 };
+            cmbKillTimeHours = new ComboBox { Left = 55, Top = 92, Width = 50, DropDownStyle = ComboBoxStyle.DropDownList };
 
-            var lblKillMinutes = new Label { Text = "Minutes:", Left = 95, Top = 95, Width = 50 };
-            txtKillTimeMinutes = new TextBox { Left = 150, Top = 92, Width = 30 };
+            var lblKillMinutes = new Label { Text = "Minutes:", Left = 115, Top = 95, Width = 50 };
+            cmbKillTimeMinutes = new ComboBox { Left = 170, Top = 92, Width = 50, DropDownStyle = ComboBoxStyle.DropDownList };
 
-            var lblKillSeconds = new Label { Text = "Seconds:", Left = 190, Top = 95, Width = 50 };
-            txtKillTimeSeconds = new TextBox { Left = 245, Top = 92, Width = 30 };
+            var lblKillSeconds = new Label { Text = "Seconds:", Left = 230, Top = 95, Width = 50 };
+            cmbKillTimeSeconds = new ComboBox { Left = 285, Top = 92, Width = 50, DropDownStyle = ComboBoxStyle.DropDownList };
+
+            PopulateComboBoxes();
 
             var btnOk = new Button { Text = "OK", Left = 10, Top = 140, Width = 75, DialogResult = DialogResult.OK };
             btnOk.Click += BtnOk_Click;
@@ -48,28 +50,12 @@
             btnReset.Click += BtnReset_Click;
 
             Controls.AddRange(new Control[] {
-                lblWarning, lblWarningHours, txtWarningTimeHours, lblWarningMinutes, txtWarningTimeMinutes, lblWarningSeconds, txtWarningTimeSeconds,
-                lblKill, lblKillHours, txtKillTimeHours, lblKillMinutes, txtKillTimeMinutes, lblKillSeconds, txtKillTimeSeconds,
+                lblWarning, lblWarningHours, cmbWarningTimeHours, lblWarningMinutes, cmbWarningTimeMinutes, lblWarningSeconds, cmbWarningTimeSeconds,
+                lblKill, lblKillHours, cmbKillTimeHours, lblKillMinutes, cmbKillTimeMinutes, lblKillSeconds, cmbKillTimeSeconds,
                 btnOk, btnCancel, btnReset
             });
 
-            // Set initial values
-            var warningTimeParts = currentWarningTime.Split(':');
-            var killTimeParts = currentKillTime.Split(':');
-
-            if (warningTimeParts.Length == 3)
-            {
-                txtWarningTimeHours.Text = warningTimeParts[0];
-                txtWarningTimeMinutes.Text = warningTimeParts[1];
-                txtWarningTimeSeconds.Text = warningTimeParts[2];
-            }
-
-            if (killTimeParts.Length == 3)
-            {
-                txtKillTimeHours.Text = killTimeParts[0];
-                txtKillTimeMinutes.Text = killTimeParts[1];
-                txtKillTimeSeconds.Text = killTimeParts[2];
-            }
+            SetInitialValues(currentWarningTime, currentKillTime);
 
             AcceptButton = btnOk;
             CancelButton = btnCancel;
@@ -77,33 +63,62 @@
             StartPosition = FormStartPosition.CenterParent;
         }
 
-        private void BtnOk_Click(object sender, EventArgs e)
+        private void PopulateComboBoxes()
         {
-            if (int.TryParse(txtWarningTimeHours.Text, out int wh) &&
-                int.TryParse(txtWarningTimeMinutes.Text, out int wm) &&
-                int.TryParse(txtWarningTimeSeconds.Text, out int ws) &&
-                int.TryParse(txtKillTimeHours.Text, out int kh) &&
-                int.TryParse(txtKillTimeMinutes.Text, out int km) &&
-                int.TryParse(txtKillTimeSeconds.Text, out int ks))
+            for (int i = 0; i <= 48; i++)
             {
-                WarningTime = $"{wh:D2}:{wm:D2}:{ws:D2}";
-                KillTime = $"{kh:D2}:{km:D2}:{ks:D2}";
+                string value = i.ToString("D2");
+                cmbWarningTimeHours.Items.Add(value);
+                cmbKillTimeHours.Items.Add(value);
+            }
+
+            for (int i = 0; i <= 60; i++)
+            {
+                string value = i.ToString("D2");
+                cmbWarningTimeMinutes.Items.Add(value);
+                cmbWarningTimeSeconds.Items.Add(value);
+                cmbKillTimeMinutes.Items.Add(value);
+                cmbKillTimeSeconds.Items.Add(value);
+            }
+        }
+
+        private void SetInitialValues(string warningTime, string killTime)
+        {
+            SetComboBoxValues(cmbWarningTimeHours, cmbWarningTimeMinutes, cmbWarningTimeSeconds, warningTime);
+            SetComboBoxValues(cmbKillTimeHours, cmbKillTimeMinutes, cmbKillTimeSeconds, killTime);
+        }
+
+        private void SetComboBoxValues(ComboBox hours, ComboBox minutes, ComboBox seconds, string time)
+        {
+            var parts = time.Split(':');
+            if (parts.Length == 3)
+            {
+                hours.SelectedItem = parts[0];
+                minutes.SelectedItem = parts[1];
+                seconds.SelectedItem = parts[2];
             }
             else
             {
-                MessageBox.Show("Invalid time format. Please enter valid numbers for hours, minutes, and seconds.");
-                DialogResult = DialogResult.None;
+                hours.SelectedIndex = 0;
+                minutes.SelectedIndex = 0;
+                seconds.SelectedIndex = 0;
             }
+        }
+
+        private void BtnOk_Click(object sender, EventArgs e)
+        {
+            WarningTime = $"{cmbWarningTimeHours.SelectedItem}:{cmbWarningTimeMinutes.SelectedItem}:{cmbWarningTimeSeconds.SelectedItem}";
+            KillTime = $"{cmbKillTimeHours.SelectedItem}:{cmbKillTimeMinutes.SelectedItem}:{cmbKillTimeSeconds.SelectedItem}";
         }
 
         private void BtnReset_Click(object sender, EventArgs e)
         {
-            txtWarningTimeHours.Text = "00";
-            txtWarningTimeMinutes.Text = "00";
-            txtWarningTimeSeconds.Text = "00";
-            txtKillTimeHours.Text = "00";
-            txtKillTimeMinutes.Text = "00";
-            txtKillTimeSeconds.Text = "00";
+            cmbWarningTimeHours.SelectedIndex = 0;
+            cmbWarningTimeMinutes.SelectedIndex = 0;
+            cmbWarningTimeSeconds.SelectedIndex = 0;
+            cmbKillTimeHours.SelectedIndex = 0;
+            cmbKillTimeMinutes.SelectedIndex = 0;
+            cmbKillTimeSeconds.SelectedIndex = 0;
             WarningTime = "00:00:00";
             KillTime = "00:00:00";
         }
