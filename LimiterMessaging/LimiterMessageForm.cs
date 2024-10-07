@@ -30,9 +30,9 @@ namespace LimiterMessaging
             // 
             // lblMessage
             // 
-            lblMessage.Location = new Point(10, 10);
+            lblMessage.Location = new Point(12, 10);
             lblMessage.Name = "lblMessage";
-            lblMessage.Size = new Size(281, 87);
+            lblMessage.Size = new Size(279, 87);
             lblMessage.TabIndex = 0;
             // 
             // okBtn
