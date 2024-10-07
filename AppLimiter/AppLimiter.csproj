@@ -1,7 +1,8 @@
-<Project Sdk="Microsoft.NET.Sdk.Worker">
+﻿<Project Sdk="Microsoft.NET.Sdk.Worker">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>dotnet-AppLimiter-dcdbb7dd-ad2e-4cec-9521-08d2f1911596</UserSecretsId>
@@ -15,5 +16,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AppLimiterLibrary\AppLimiterLibrary.csproj" />
+    <ProjectReference Include="..\LimiterMessaging\LimiterMessaging.csproj" />
   </ItemGroup>
 </Project>

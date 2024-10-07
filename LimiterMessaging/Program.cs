@@ -6,12 +6,19 @@ namespace LimiterMessaging
         ///  The main entry point for the application.
         /// </summary>
         [STAThread]
-        static void Main(string[] args)
+        public static void Main(string[] args)
         {
-            string message = args.Length > 0 ? args[0] : "No message provided.";
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
 
-            ApplicationConfiguration.Initialize();
-            Application.Run(new LimiterMessagingForm(message));
+            if (args.Length >= 2)
+            {
+                Application.Run(new LimiterMessagingForm(args[0], args[1]));
+            }
+            else
+            {
+                MessageBox.Show("Invalid arguments provided.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
     }
 }

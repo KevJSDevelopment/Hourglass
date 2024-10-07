@@ -3,6 +3,8 @@ using System.Diagnostics;
 using System.IO.Pipes;
 using System.Text.Json;
 using AppLimiterLibrary;
+using LimiterMessaging;
+using System.Windows.Forms;
 using Microsoft.Extensions.Configuration;
 
 namespace AppLimiter
@@ -71,11 +73,35 @@ namespace AppLimiter
                 }
             }
 
+            _ = ListenForMessages(stoppingToken);
+
             while (!stoppingToken.IsCancellationRequested)
             {
                 TrackAppUsage();
                 EnforceUsageLimits();
                 await Task.Delay(1000, stoppingToken);
+            }
+        }
+
+        private async Task ListenForMessages(CancellationToken stoppingToken)
+        {
+            while (!stoppingToken.IsCancellationRequested)
+            {
+                using (var server = new NamedPipeServerStream("AppLimiterPipe", PipeDirection.In))
+                {
+                    await server.WaitForConnectionAsync(stoppingToken);
+
+                    using (var reader = new StreamReader(server))
+                    {
+                        string message = await reader.ReadLineAsync();
+                        if (message.StartsWith("IGNORE:"))
+                        {
+                            string processName = message.Substring(7);
+                            LimitUpdateHandler.IgnoreLimitForDay(processName);
+                            _logger.LogInformation($"Ignoring limits for {processName} until tomorrow.");
+                        }
+                    }
+                }
             }
         }
 
@@ -158,6 +184,11 @@ namespace AppLimiter
         {
             foreach (var app in _appUsage.Keys.ToList())
             {
+                if(LimitUpdateHandler.IsLimitIgnored(app))
+                {
+                    continue;
+                }
+
                 if (_appLimits.TryGetValue(app, out TimeSpan limit) && _appUsage[app] >= limit)
                 {
                     if (app.EndsWith("warning"))
@@ -207,24 +238,30 @@ namespace AppLimiter
         {
             var timeRemaining = _appLimits[executablePath] - _appLimits[executablePath + "warning"];
             var appName = Path.GetFileNameWithoutExtension(executablePath);
-            string warningMessage;
-            if(timeRemaining >= TimeSpan.FromMinutes(1)) warningMessage = $"WARNING: You have been using {appName} for an extended period. The application will close in {timeRemaining.Minutes} minutes if usage continues.";
-            else warningMessage = $"WARNING: You have been using {appName} for an extended period. The application will close in {timeRemaining.Seconds} seconds if usage continues.";
+            string warningMessage = timeRemaining >= TimeSpan.FromMinutes(1)
+                ? $"WARNING: You have been using {appName} for an extended period. The application will close in {timeRemaining.Minutes} minutes if usage continues."
+                : $"WARNING: You have been using {appName} for an extended period. The application will close in {timeRemaining.Seconds} seconds if usage continues.";
 
             _logger.LogWarning(warningMessage);
 
             try
             {
-                Process.Start(new ProcessStartInfo
+                // Run the form on a separate thread to avoid blocking the worker
+                Task.Run(() =>
                 {
-                    FileName = "C:\\Users\\Kshhn\\source\\repos\\AppLimiter\\LimiterMessaging\\bin\\Debug\\net8.0-windows\\LimiterMessaging.exe",
-                    Arguments = $"\"{warningMessage}\"",
-                    UseShellExecute = true
+                    Application.SetHighDpiMode(HighDpiMode.SystemAware);
+                    Application.EnableVisualStyles();
+                    Application.SetCompatibleTextRenderingDefault(false);
+
+                    using (var form = new LimiterMessagingForm(warningMessage, appName))
+                    {
+                        Application.Run(form);
+                    }
                 });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to launch LimiterMessaging application.");
+                _logger.LogError(ex, "Failed to show LimiterMessaging form.");
             }
         }
 
