@@ -11,54 +11,55 @@ namespace LimiterMessaging
     {
         private string _processName;
         private Label lblMessage;
-        private Button button1;
-        private Button button2;
-        private string _message;
+        private Button okBtn;
+        private Button ignoreLimitsBtn;
+
         public LimiterMessagingForm(string message, string processName)
         {
             _processName = processName;
-            _message = message;
             InitializeComponent();
+            lblMessage.Text = message;
         }
 
         private void InitializeComponent()
         {
             lblMessage = new Label();
-            button1 = new Button();
-            button2 = new Button();
+            okBtn = new Button();
+            ignoreLimitsBtn = new Button();
             SuspendLayout();
             // 
             // lblMessage
             // 
             lblMessage.Location = new Point(10, 10);
             lblMessage.Name = "lblMessage";
-            lblMessage.Size = new Size(280, 0);
+            lblMessage.Size = new Size(281, 87);
             lblMessage.TabIndex = 0;
-            lblMessage.Text = _message;
             // 
-            // button1
+            // okBtn
             // 
-            button1.Location = new Point(263, 113);
-            button1.Name = "button1";
-            button1.Size = new Size(50, 25);
-            button1.TabIndex = 1;
-            button1.Text = "OK";
-            button1.UseVisualStyleBackColor = true;
+            okBtn.Location = new Point(241, 100);
+            okBtn.Name = "okBtn";
+            okBtn.Size = new Size(50, 25);
+            okBtn.TabIndex = 1;
+            okBtn.Text = "OK";
+            okBtn.UseVisualStyleBackColor = true;
+            okBtn.Click += OkBtn_Click;
             // 
-            // button2
+            // ignoreLimitsBtn
             // 
-            button2.Location = new Point(10, 113);
-            button2.Name = "button2";
-            button2.Size = new Size(100, 25);
-            button2.TabIndex = 2;
-            button2.Text = "Ignore Limits";
-            button2.UseVisualStyleBackColor = true;
+            ignoreLimitsBtn.Location = new Point(10, 100);
+            ignoreLimitsBtn.Name = "ignoreLimitsBtn";
+            ignoreLimitsBtn.Size = new Size(100, 25);
+            ignoreLimitsBtn.TabIndex = 2;
+            ignoreLimitsBtn.Text = "Ignore Limits";
+            ignoreLimitsBtn.UseVisualStyleBackColor = true;
+            ignoreLimitsBtn.Click += IgnoreLimitsBtn_Click;
             // 
             // LimiterMessagingForm
             // 
-            ClientSize = new Size(325, 150);
-            Controls.Add(button2);
-            Controls.Add(button1);
+            ClientSize = new Size(303, 137);
+            Controls.Add(ignoreLimitsBtn);
+            Controls.Add(okBtn);
             Controls.Add(lblMessage);
             FormBorderStyle = FormBorderStyle.FixedDialog;
             MaximizeBox = false;
@@ -69,7 +70,7 @@ namespace LimiterMessaging
             ResumeLayout(false);
         }
 
-        private void IgnoreLimits_Click(object sender, EventArgs e)
+        private void IgnoreLimitsBtn_Click(object sender, EventArgs e)
         {
             using (var client = new NamedPipeClientStream(".", "AppLimiterPipe", PipeDirection.Out))
             {
@@ -87,6 +88,11 @@ namespace LimiterMessaging
                     MessageBox.Show($"Failed to communicate with AppLimiter: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
+            this.Close();
+        }
+
+        private void OkBtn_Click(object sender, EventArgs e)
+        {
             this.Close();
         }
     }
