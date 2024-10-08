@@ -8,8 +8,10 @@ namespace AppLimiterLibrary
 {
     public class ProcessInfo
     {
+        public int Id { get; set; }
         public string Name { get; set; }
         public string Executable { get; set; }
+        public bool Ignore { get; set; }
         public string WarningTime { get; set; }
         public string KillTime { get; set; }
     }

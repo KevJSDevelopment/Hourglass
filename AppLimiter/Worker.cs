@@ -12,20 +12,16 @@ namespace AppLimiter
     public class Worker : BackgroundService
     {
         private readonly ILogger<Worker> _logger;
-        private readonly string _connectionString;
+        private readonly AppRepository _appRepository;
         private readonly Dictionary<string, TimeSpan> _appUsage = new Dictionary<string, TimeSpan>();
         private readonly Dictionary<string, TimeSpan> _appLimits = new Dictionary<string, TimeSpan>();
         private readonly Dictionary<string, string> _processToExecutableMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         private readonly HashSet<string> _shownWarnings = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        private FileSystemWatcher _watcher;
-        private string _configPath;
 
         public Worker(ILogger<Worker> logger, IConfiguration configuration)
         {
             _logger = logger;
-            _connectionString = configuration.GetConnectionString("DefaultConnection");
-            _configPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "AppLimiter", "ProcessLimits.json");
-            InitializeFileWatcher();
+            _appRepository = new AppRepository();
             InitializeProcessMap();
         }
 
@@ -37,43 +33,9 @@ namespace AppLimiter
             // Add more mappings as needed
         }
 
-        private void InitializeFileWatcher()
-        {
-            var directory = Path.GetDirectoryName(_configPath);
-            if (!Directory.Exists(directory))
-                Directory.CreateDirectory(directory);
-
-            _watcher = new FileSystemWatcher(directory)
-            {
-                Filter = Path.GetFileName(_configPath),
-                EnableRaisingEvents = true
-            };
-            _watcher.Changed += OnConfigFileChanged;
-        }
-
-        public SqlConnection GetConnection()
-        {
-            return new SqlConnection(_connectionString);
-        }
-
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            LoadAndApplyLimits(); // Initial load
-            using (var connection = GetConnection())
-            {
-                try
-                {
-                    await connection.OpenAsync(stoppingToken);
-                    _logger.LogInformation("Database connection successful");
-                    // Perform your database operations here
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error connecting to the database");
-                }
-            }
-
-            _ = ListenForMessages(stoppingToken);
+            await LoadAndApplyLimits(); // Initial load
 
             while (!stoppingToken.IsCancellationRequested)
             {
@@ -83,45 +45,24 @@ namespace AppLimiter
             }
         }
 
-        private async Task ListenForMessages(CancellationToken stoppingToken)
-        {
-            while (!stoppingToken.IsCancellationRequested)
-            {
-                using (var server = new NamedPipeServerStream("AppLimiterPipe", PipeDirection.In))
-                {
-                    await server.WaitForConnectionAsync(stoppingToken);
-
-                    using (var reader = new StreamReader(server))
-                    {
-                        string message = await reader.ReadLineAsync();
-                        if (message.StartsWith("IGNORE:"))
-                        {
-                            string processName = message.Substring(7);
-                            LimitUpdateHandler.IgnoreLimitForDay(processName);
-                            _logger.LogInformation($"Ignoring limits for {processName} until tomorrow.");
-                        }
-                    }
-                }
-            }
-        }
-
-        private void OnConfigFileChanged(object sender, FileSystemEventArgs e)
+        private async void OnConfigFileChanged(object sender, FileSystemEventArgs e)
         {
             _logger.LogInformation("Configuration file changed. Reloading limits.");
-            LoadAndApplyLimits();
+            await LoadAndApplyLimits();
         }
 
-        private void LoadAndApplyLimits()
+        private async Task LoadAndApplyLimits()
         {
             try
             {
-                if (File.Exists(_configPath))
-                {
-                    string json = File.ReadAllText(_configPath);
-                    var limits = JsonSerializer.Deserialize<List<ProcessInfo>>(json);
+                var limits = await _appRepository.LoadAllLimits();
 
-                    _appLimits.Clear();
-                    foreach (var limit in limits)
+                _appLimits.Clear();
+                _processToExecutableMap.Clear();
+
+                foreach (var limit in limits)
+                {
+                    if (!limit.Ignore)
                     {
                         if (TimeSpan.TryParse(limit.KillTime, out TimeSpan killTime) && killTime > TimeSpan.Zero)
                         {
@@ -131,20 +72,12 @@ namespace AppLimiter
                         {
                             _appLimits[limit.Executable.ToLower() + "warning"] = warningTime;
                         }
-                        // Add to process map if not already present
-                        string processName = Path.GetFileNameWithoutExtension(limit.Executable);
-                        if (!_processToExecutableMap.ContainsKey(processName))
-                        {
-                            _processToExecutableMap[processName] = limit.Executable;
-                        }
                     }
-                    _logger.LogInformation("Limits updated successfully.");
+
+                    string processName = Path.GetFileNameWithoutExtension(limit.Executable);
+                    _processToExecutableMap[processName] = limit.Executable;
                 }
-                else
-                {
-                    _logger.LogWarning("Configuration file not found. Using empty limits.");
-                    _appLimits.Clear();
-                }
+                _logger.LogInformation("Limits updated successfully.");
             }
             catch (Exception ex)
             {

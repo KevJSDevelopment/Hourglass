@@ -72,22 +72,7 @@ namespace LimiterMessaging
 
         private void IgnoreLimitsBtn_Click(object sender, EventArgs e)
         {
-            using (var client = new NamedPipeClientStream(".", "AppLimiterPipe", PipeDirection.Out))
-            {
-                try
-                {
-                    client.Connect(1000); // Wait up to 1 second
-                    using (var writer = new StreamWriter(client))
-                    {
-                        writer.WriteLine($"IGNORE:{_processName}");
-                        writer.Flush();
-                    }
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Failed to communicate with AppLimiter: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-            }
+            
             this.Close();
         }
 

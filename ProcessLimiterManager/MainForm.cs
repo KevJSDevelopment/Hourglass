@@ -18,13 +18,14 @@ namespace ProcessLimiterManager
         private Button btnSetLimits;
         private Button btnAddApplication;
         private Button btnRemoveApplication;
+        private AppRepository _appRepository;
 
         public MainForm()
         {
+            _appRepository = new AppRepository();
             SetupComponent();
             LoadApplications();
             MergeDuplicates();
-            LoadExistingLimits();
         }
 
         private void SetupComponent()
@@ -80,18 +81,17 @@ namespace ProcessLimiterManager
 
         }
 
-        private void LoadApplications()
+        private async Task LoadApplications()
         {
             listViewApplications.Items.Clear();
             applications.Clear();
             addedExecutables.Clear();
 
-            // Add all applications that were added manually
-            CheckForPersistedApplications();
+            applications = await _appRepository.LoadAllLimits();
 
-            // Display applications in ListView
             foreach (var app in applications)
             {
+                addedExecutables.Add(app.Executable);
                 var item = new ListViewItem(app.Name);
                 item.SubItems.Add(app.Executable);
                 item.SubItems.Add(app.WarningTime);
@@ -134,23 +134,23 @@ namespace ProcessLimiterManager
         {
             if (addedExecutables.Add(executable))
             {
-                applications.Add(new ProcessInfo
+                var newApp = new ProcessInfo
                 {
                     Name = name,
                     Executable = executable,
                     WarningTime = "00:00:00",
                     KillTime = "00:00:00"
-                });
+                };
+                await _appRepository.SaveLimits(newApp);
+                applications.Add(newApp);
             }
-            await PersistApplicationsAdded();
         }
 
-        private async Task RemoveApplication(string name)
+        private async Task RemoveApplication(string executable)
         {
-            var app = applications.Find(a => a.Name == name);
-            applications.Remove(app);
-
-            await PersistApplicationsAdded();
+            await _appRepository.DeleteApp(executable);
+            applications.RemoveAll(a => a.Executable == executable);
+            addedExecutables.Remove(executable);
         }
 
         private async Task<string> PersistApplicationsAdded()
@@ -227,20 +227,17 @@ namespace ProcessLimiterManager
                 {
                     string name = Path.GetFileNameWithoutExtension(openFileDialog.FileName);
                     await AddApplication(name, openFileDialog.FileName);
-
-                    // Refresh the ListView
-                    LoadApplications();
+                    await LoadApplications();
                 }
             }
         }
 
-        private void btnRefresh_Click(object sender, EventArgs e)
+        private async void btnRefresh_Click(object sender, EventArgs e)
         {
-            LoadApplications();
-            LoadExistingLimits();
+            await LoadApplications();
         }
 
-        private void btnSetLimits_Click(object sender, EventArgs e)
+        private async void btnSetLimits_Click(object sender, EventArgs e)
         {
             if (listViewApplications.SelectedItems.Count > 0)
             {
@@ -252,10 +249,12 @@ namespace ProcessLimiterManager
                         selectedApp.WarningTime = limitForm.WarningTime;
                         selectedApp.KillTime = limitForm.KillTime;
 
+                        await _appRepository.SaveLimits(selectedApp);
+
                         listViewApplications.SelectedItems[0].SubItems[2].Text = selectedApp.WarningTime;
                         listViewApplications.SelectedItems[0].SubItems[3].Text = selectedApp.KillTime;
 
-                        SaveLimits();
+                        MessageBox.Show("Limits saved successfully.");
                     }
                 }
             }
@@ -263,33 +262,12 @@ namespace ProcessLimiterManager
 
         private async void btnRemoveApplication_Click(object sender, EventArgs e)
         {
-            if(listViewApplications.SelectedItems.Count > 0)
+            if (listViewApplications.SelectedItems.Count > 0)
             {
                 var selectedApp = applications[listViewApplications.SelectedIndices[0]];
-                await RemoveApplication(selectedApp.Name);
-
-                SaveLimits();
-                LoadApplications();
+                await RemoveApplication(selectedApp.Executable);
+                await LoadApplications();
             }
-        }
-        private void SaveLimits()
-        {
-            var limits = applications.Where(a => TimeSpan.Parse(a.WarningTime) >= TimeSpan.Zero || TimeSpan.Parse(a.KillTime) >= TimeSpan.Zero)
-                                     .Select(a => new ProcessInfo
-                                     {
-                                         Name = a.Name,
-                                         Executable = a.Executable,
-                                         WarningTime = a.WarningTime,
-                                         KillTime = a.KillTime
-                                     });
-
-            string json = JsonSerializer.Serialize(limits, new JsonSerializerOptions { WriteIndented = true });
-            string filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "AppLimiter", "ProcessLimits.json");
-
-            Directory.CreateDirectory(Path.GetDirectoryName(filePath));
-            File.WriteAllText(filePath, json);
-
-            MessageBox.Show("Limits saved successfully.");
         }
     }
 }

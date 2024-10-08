@@ -18,4 +18,10 @@
     <ProjectReference Include="..\AppLimiterLibrary\AppLimiterLibrary.csproj" />
     <ProjectReference Include="..\LimiterMessaging\LimiterMessaging.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 </Project>
