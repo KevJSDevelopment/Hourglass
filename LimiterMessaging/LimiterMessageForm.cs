@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AppLimiterLibrary;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
@@ -13,9 +14,11 @@ namespace LimiterMessaging
         private Label lblMessage;
         private Button okBtn;
         private Button ignoreLimitsBtn;
+        private AppRepository _repo;
 
         public LimiterMessagingForm(string message, string processName)
         {
+            _repo = new AppRepository();
             _processName = processName;
             InitializeComponent();
             lblMessage.Text = message;
@@ -70,9 +73,9 @@ namespace LimiterMessaging
             ResumeLayout(false);
         }
 
-        private void IgnoreLimitsBtn_Click(object sender, EventArgs e)
+        private async void IgnoreLimitsBtn_Click(object sender, EventArgs e)
         {
-            
+            await _repo.UpdateIgnoreStatus(_processName, true);
             this.Close();
         }
 

@@ -45,12 +45,30 @@
             });
         }
 
-        public async Task UpdateIgnoreStatus(string executable, bool ignore)
+        public async Task UpdateIgnoreStatus(string processName, bool ignore)
         {
-            var sql = "UPDATE Apps SET Ignore = @Ignore WHERE Executable = @Executable";
+            var sql = "UPDATE Apps SET Ignore = @Ignore WHERE Name = @Name";
             await DatabaseManager.ExecuteNonQueryAsync(sql, command =>
             {
                 command.Parameters.AddWithValue("@Ignore", ignore);
+                command.Parameters.AddWithValue("@Name", processName);
+            });
+        }
+
+        public async Task<bool> CheckIgnoreStatus(string executable)
+        {
+            var sql = "SELECT CASE WHEN Ignore = 1 THEN 1 ELSE 0 END FROM Apps WHERE Executable = @Executable";
+
+            return await DatabaseManager.ExecuteQueryAsync(sql, reader =>
+            {
+                if (reader.Read())
+                {
+                    return reader.GetInt32(0) == 1;
+                }
+                return false; // Return false if no matching record is found
+            },
+            command =>
+            {
                 command.Parameters.AddWithValue("@Executable", executable);
             });
         }

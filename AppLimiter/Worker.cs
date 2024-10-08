@@ -113,13 +113,13 @@ namespace AppLimiter
             }
         }
 
-        private void EnforceUsageLimits()
+        private async void EnforceUsageLimits()
         {
             foreach (var app in _appUsage.Keys.ToList())
             {
-                if(LimitUpdateHandler.IsLimitIgnored(app))
+                if (await _appRepository.CheckIgnoreStatus(app))
                 {
-                    continue;
+                    continue; // Skip this app if it's set to be ignored
                 }
 
                 if (_appLimits.TryGetValue(app, out TimeSpan limit) && _appUsage[app] >= limit)

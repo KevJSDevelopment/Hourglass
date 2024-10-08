@@ -27,21 +27,20 @@ namespace AppLimiterLibrary
             return new SqlConnection(_connectionString);
         }
 
-        public static async Task<T> ExecuteQueryAsync<T>(string query, Func<SqlDataReader, T> map)
+        public static async Task<T> ExecuteQueryAsync<T>(string query, Func<SqlDataReader, T> map, Action<SqlCommand> setParameters = null)
         {
             using (var connection = GetConnection())
             {
                 await connection.OpenAsync();
                 using (var command = new SqlCommand(query, connection))
-                using (var reader = await command.ExecuteReaderAsync())
                 {
-                    if (await reader.ReadAsync())
+                    setParameters?.Invoke(command);
+                    using (var reader = await command.ExecuteReaderAsync())
                     {
                         return map(reader);
                     }
                 }
             }
-            return default;
         }
 
         public static async Task ExecuteNonQueryAsync(string query, Action<SqlCommand> setParameters = null)
