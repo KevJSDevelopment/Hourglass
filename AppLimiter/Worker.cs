@@ -36,8 +36,7 @@ namespace AppLimiter
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             await LoadAndApplyLimits(); // Initial load
-
-            while (!stoppingToken.IsCancellationRequested)
+            while (!stoppingToken.IsCancellationRequested )
             {
                 TrackAppUsage();
                 EnforceUsageLimits();
@@ -94,8 +93,12 @@ namespace AppLimiter
         private void TrackAppUsage()
         {
             var processes = Process.GetProcesses();
+            List<string> processNames = new List<string>();
             foreach (var process in processes)
             {
+                if (processNames.Contains(process.ProcessName)) continue;
+                
+                processNames.Add(process.ProcessName);
                 if (_processToExecutableMap.TryGetValue(process.ProcessName, out string executable))
                 {
                     var matchingLimit = _appLimits.Keys.FirstOrDefault(k => k.Equals(executable.ToLower(), StringComparison.OrdinalIgnoreCase));
@@ -106,6 +109,7 @@ namespace AppLimiter
                             _appUsage[matchingLimit] = TimeSpan.Zero;
                             _appUsage[matchingLimit + "warning"] = TimeSpan.Zero;
                         }
+                        _logger.LogInformation($"AppUsage {_appUsage.First().Value.ToString()} Updated at {DateTime.Now.ToString("hh:mm:ss fff")}");
                         _appUsage[matchingLimit] += TimeSpan.FromSeconds(1);
                         _appUsage[matchingLimit + "warning"] += TimeSpan.FromSeconds(1);
                     }
