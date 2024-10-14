@@ -24,8 +24,7 @@ namespace ProcessLimiterManager
         {
             _appRepository = new AppRepository();
             SetupComponent();
-            LoadApplications();
-            MergeDuplicates();
+            _ = LoadApplications();
         }
 
         private void SetupComponent()
@@ -83,11 +82,13 @@ namespace ProcessLimiterManager
 
         private async Task LoadApplications()
         {
+            var computerId = ComputerIdentifier.GetUniqueIdentifier();
+
             listViewApplications.Items.Clear();
             applications.Clear();
             addedExecutables.Clear();
 
-            applications = await _appRepository.LoadAllLimits();
+            applications = await _appRepository.LoadAllLimits(computerId);
 
             foreach (var app in applications)
             {
@@ -100,36 +101,6 @@ namespace ProcessLimiterManager
             }
         }
 
-        private void CheckForPersistedApplications()
-        {
-            string filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "AppLimiter", "AddedApplications.json");
-
-            if (File.Exists(filePath))
-            {
-                try
-                {
-                    string json = File.ReadAllText(filePath);
-                    var persistedApps = JsonSerializer.Deserialize<List<ProcessInfo>>(json);
-
-                    if (persistedApps != null)
-                    {
-                        foreach (var app in persistedApps)
-                        {
-                            if (!addedExecutables.Contains(app.Executable))
-                            {
-                                applications.Add(app);
-                                addedExecutables.Add(app.Executable);
-                            }
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Error loading persisted applications: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-            }
-        }
-
         private async Task AddApplication(string name, string executable)
         {
             if (addedExecutables.Add(executable))
@@ -139,7 +110,8 @@ namespace ProcessLimiterManager
                     Name = name,
                     Executable = executable,
                     WarningTime = "00:00:00",
-                    KillTime = "00:00:00"
+                    KillTime = "00:00:00",
+                    ComputerId = ComputerIdentifier.GetUniqueIdentifier(),
                 };
                 await _appRepository.SaveLimits(newApp);
                 applications.Add(newApp);
@@ -151,69 +123,6 @@ namespace ProcessLimiterManager
             await _appRepository.DeleteApp(executable);
             applications.RemoveAll(a => a.Executable == executable);
             addedExecutables.Remove(executable);
-        }
-
-        private async Task<string> PersistApplicationsAdded()
-        {
-            string json = JsonSerializer.Serialize(applications, new JsonSerializerOptions { WriteIndented = true });
-            string filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "AppLimiter", "AddedApplications.json");
-
-            Directory.CreateDirectory(Path.GetDirectoryName(filePath));
-            File.WriteAllText(filePath, json);
-
-            return filePath;
-        }
-
-        private string FindExecutableInDirectory(string directory)
-        {
-            if (string.IsNullOrEmpty(directory) || !Directory.Exists(directory))
-                return string.Empty;
-
-            var exeFiles = Directory.GetFiles(directory, "*.exe", SearchOption.AllDirectories);
-            return exeFiles.FirstOrDefault() ?? string.Empty;
-        }
-
-        private void LoadExistingLimits()
-        {
-            string filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "AppLimiter", "ProcessLimits.json");
-            if (File.Exists(filePath))
-            {
-                string json = File.ReadAllText(filePath);
-                var existingLimits = JsonSerializer.Deserialize<List<ProcessInfo>>(json);
-
-                foreach (var limit in existingLimits)
-                {
-                    var listItem = listViewApplications.Items.Cast<ListViewItem>().FirstOrDefault(item => item.SubItems[1].Text.Equals(limit.Executable, StringComparison.OrdinalIgnoreCase));
-                    if (listItem != null)
-                    {
-                        listItem.SubItems[2].Text = limit.WarningTime;
-                        listItem.SubItems[3].Text = limit.KillTime;
-
-                        var app = applications.FirstOrDefault(a => a.Executable.Equals(limit.Executable, StringComparison.OrdinalIgnoreCase));
-                        if (app != null)
-                        {
-                            app.WarningTime = limit.WarningTime;
-                            app.KillTime = limit.KillTime;
-                        }
-                    }
-                }
-            }
-        }
-        private void MergeDuplicates()
-        {
-            var groups = applications.GroupBy(app => app.Executable.ToLower());
-            applications = groups.Select(group =>
-            {
-                var merged = group.First();
-                if (group.Count() > 1)
-                {
-                    merged.Name = string.Join(" / ", group.Select(app => app.Name).Distinct());
-                    merged.WarningTime = group.Max(app => app.WarningTime);
-                    merged.KillTime = group.Max(app => app.KillTime);
-                }
-                return merged;
-            }).ToList();
-            Console.WriteLine(applications);
         }
 
         private async void btnAddApplication_Click(object sender, EventArgs e)

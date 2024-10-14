@@ -14,5 +14,7 @@ namespace AppLimiterLibrary
         public bool Ignore { get; set; }
         public string WarningTime { get; set; }
         public string KillTime { get; set; }
+        public string ComputerId { get; set; }
+
     }
 }

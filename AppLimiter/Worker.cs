@@ -44,17 +44,13 @@ namespace AppLimiter
             }
         }
 
-        private async void OnConfigFileChanged(object sender, FileSystemEventArgs e)
-        {
-            _logger.LogInformation("Configuration file changed. Reloading limits.");
-            await LoadAndApplyLimits();
-        }
-
         private async Task LoadAndApplyLimits()
         {
+            var computerId = ComputerIdentifier.GetUniqueIdentifier();
+
             try
             {
-                var limits = await _appRepository.LoadAllLimits();
+                var limits = await _appRepository.LoadAllLimits(computerId);
 
                 _appLimits.Clear();
                 _processToExecutableMap.Clear();
@@ -83,11 +79,6 @@ namespace AppLimiter
                 _logger.LogError(ex, "Error loading process limits. Using empty limits.");
                 _appLimits.Clear();
             }
-        }
-
-        private void SetDefaultLimits()
-        {
-            _appLimits.Clear();
         }
 
         private void TrackAppUsage()
@@ -200,12 +191,6 @@ namespace AppLimiter
             {
                 _logger.LogError(ex, "Failed to show LimiterMessaging form.");
             }
-        }
-
-        private void ResetDailyUsage()
-        {
-            _appUsage.Clear();
-            _shownWarnings.Clear();
         }
     }
 }

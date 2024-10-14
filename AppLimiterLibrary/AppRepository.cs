@@ -5,13 +5,13 @@
         public async Task SaveLimits(ProcessInfo processInfo)
         {
             var sql = @"
-                IF EXISTS (SELECT 1 FROM Apps WHERE Executable = @Executable)
+                IF EXISTS (SELECT 1 FROM Apps WHERE Executable = @Executable AND ComputerId = @ComputerId)
                     UPDATE Apps 
                     SET Name = @Name, Ignore = @Ignore, WarningTime = @WarningTime, KillTime = @KillTime 
-                    WHERE Executable = @Executable
+                    WHERE Executable = @Executable AND ComputerId = @ComputerId
                 ELSE
-                    INSERT INTO Apps (Name, Executable, Ignore, WarningTime, KillTime) 
-                    VALUES (@Name, @Executable, @Ignore, @WarningTime, @KillTime)";
+                    INSERT INTO Apps (Name, Executable, Ignore, WarningTime, KillTime, ComputerId) 
+                    VALUES (@Name, @Executable, @Ignore, @WarningTime, @KillTime, @ComputerId)";
 
             await DatabaseManager.ExecuteNonQueryAsync(sql, command =>
             {
@@ -20,12 +20,13 @@
                 command.Parameters.AddWithValue("@Ignore", processInfo.Ignore);
                 command.Parameters.AddWithValue("@WarningTime", processInfo.WarningTime);
                 command.Parameters.AddWithValue("@KillTime", processInfo.KillTime);
+                command.Parameters.AddWithValue("@ComputerId", ComputerIdentifier.GetUniqueIdentifier());
             });
         }
 
-        public async Task<List<ProcessInfo>> LoadAllLimits()
+        public async Task<List<ProcessInfo>> LoadAllLimits(string computerId)
         {
-            var sql = "SELECT Id, Name, Executable, Ignore, WarningTime, KillTime FROM Apps";
+            var sql = "SELECT * FROM Apps WHERE ComputerId = @ComputerId";
             return await DatabaseManager.ExecuteQueryAsync(sql, reader =>
             {
                 var results = new List<ProcessInfo>();
@@ -34,6 +35,7 @@
                     results.Add(new ProcessInfo
                     {
                         Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                        ComputerId = reader.GetString(reader.GetOrdinal("ComputerId")),
                         Name = reader.GetString(reader.GetOrdinal("Name")),
                         Executable = reader.GetString(reader.GetOrdinal("Executable")),
                         Ignore = reader.GetBoolean(reader.GetOrdinal("Ignore")),
@@ -42,22 +44,25 @@
                     });
                 }
                 return results;
-            });
+            },
+            command => command.Parameters.AddWithValue("@ComputerId", computerId));
         }
+
 
         public async Task UpdateIgnoreStatus(string processName, bool ignore)
         {
-            var sql = "UPDATE Apps SET Ignore = @Ignore WHERE Name = @Name";
+            var sql = "UPDATE Apps SET Ignore = @Ignore WHERE Name = @Name AND ComputerId = @ComputerId";
             await DatabaseManager.ExecuteNonQueryAsync(sql, command =>
             {
                 command.Parameters.AddWithValue("@Ignore", ignore);
                 command.Parameters.AddWithValue("@Name", processName);
+                command.Parameters.AddWithValue("@ComputerId", ComputerIdentifier.GetUniqueIdentifier());
             });
         }
 
         public async Task<bool> CheckIgnoreStatus(string executable)
         {
-            var sql = "SELECT CASE WHEN Ignore = 1 THEN 1 ELSE 0 END FROM Apps WHERE Executable = @Executable";
+            var sql = "SELECT CASE WHEN Ignore = 1 THEN 1 ELSE 0 END FROM Apps WHERE Executable = @Executable AND ComputerId = @ComputerId";
 
             return await DatabaseManager.ExecuteQueryAsync(sql, reader =>
             {
@@ -70,15 +75,17 @@
             command =>
             {
                 command.Parameters.AddWithValue("@Executable", executable);
+                command.Parameters.AddWithValue("@ComputerId", ComputerIdentifier.GetUniqueIdentifier());
             });
         }
 
         public async Task DeleteApp(string executable)
         {
-            var sql = "DELETE FROM Apps WHERE Executable = @Executable";
+            var sql = "DELETE FROM Apps WHERE Executable = @Executable AND ComputerId = @ComputerId";
             await DatabaseManager.ExecuteNonQueryAsync(sql, command =>
             {
                 command.Parameters.AddWithValue("@Executable", executable);
+                command.Parameters.AddWithValue("@ComputerId", ComputerIdentifier.GetUniqueIdentifier());
             });
         }
 
