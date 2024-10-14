@@ -108,7 +108,7 @@ namespace AppLimiter
             }
         }
 
-        private async void EnforceUsageLimits()
+        private async Task EnforceUsageLimits()
         {
             foreach (var app in _appUsage.Keys.ToList())
             {
@@ -130,28 +130,31 @@ namespace AppLimiter
                     }
                     else
                     {
-                        var processName = _processToExecutableMap
-                            .FirstOrDefault(x => x.Value.Equals(app, StringComparison.OrdinalIgnoreCase))
-                            .Key;
-
-                        if (!string.IsNullOrEmpty(processName))
+                        if (_processToExecutableMap.TryGetValue(app, out string processName))
                         {
                             var processes = Process.GetProcessesByName(processName);
+                            HashSet<string> processedNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
                             foreach (var process in processes)
                             {
-                                try
+                                if (processedNames.Add(process.ProcessName))
                                 {
-                                    process.Kill();
-                                    _logger.LogInformation($"Terminated {process.ProcessName} due to exceeded usage limit.");
-                                    _shownWarnings.Remove(app); // Reset warning status after termination
-                                    _appUsage[app] = TimeSpan.Zero;
-                                    _appUsage[app+"warning"] = TimeSpan.Zero;
-                                }
-                                catch (Exception ex)
-                                {
-                                    _logger.LogError(ex, $"Failed to terminate {process.ProcessName}.");
+                                    try
+                                    {
+                                        process.Kill();
+                                        _logger.LogInformation($"Terminated {process.ProcessName} due to exceeded usage limit.");
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        _logger.LogError(ex, $"Failed to terminate {process.ProcessName}.");
+                                    }
                                 }
                             }
+
+                            // Reset usage and warning status after attempting to kill all instances
+                            _shownWarnings.Remove(app);
+                            _appUsage[app] = TimeSpan.Zero;
+                            _appUsage[app + "warning"] = TimeSpan.Zero;
                         }
                         else
                         {
