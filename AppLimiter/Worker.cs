@@ -17,30 +17,37 @@ namespace AppLimiter
         private readonly Dictionary<string, TimeSpan> _appLimits = new Dictionary<string, TimeSpan>();
         private readonly Dictionary<string, string> _processToExecutableMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         private readonly HashSet<string> _shownWarnings = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
+        private Dictionary<string, bool> _ignoreStatusCache = new Dictionary<string, bool>();
         public Worker(ILogger<Worker> logger, IConfiguration configuration)
         {
             _logger = logger;
             _appRepository = new AppRepository();
-            InitializeProcessMap();
-        }
-
-        private void InitializeProcessMap()
-        {
-            // Add known mappings here
-            _processToExecutableMap["LeagueClient"] = @"C:\Riot Games\League of Legends\LeagueClient.exe";
-            _processToExecutableMap["RiotClientServices"] = @"C:\Riot Games\Riot Client\RiotClientServices.exe";
-            // Add more mappings as needed
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             await LoadAndApplyLimits(); // Initial load
-            while (!stoppingToken.IsCancellationRequested )
+
+            while (!stoppingToken.IsCancellationRequested)
             {
-                TrackAppUsage();
-                EnforceUsageLimits();
-                await Task.Delay(1000, stoppingToken);
+                var startTime = DateTime.UtcNow;
+
+                await Task.WhenAll(
+                    Task.Run(() => TrackAppUsage()),
+                    EnforceUsageLimits()
+                );
+
+                var executionTime = DateTime.UtcNow - startTime;
+                var delayTime = TimeSpan.FromSeconds(1) - executionTime;
+
+                if (delayTime > TimeSpan.Zero)
+                {
+                    await Task.Delay(delayTime, stoppingToken);
+                }
+                else
+                {
+                    _logger.LogWarning($"Execution cycle took longer than 1 second: {executionTime.TotalMilliseconds}ms");
+                }
             }
         }
 
@@ -83,39 +90,35 @@ namespace AppLimiter
 
         private void TrackAppUsage()
         {
-            var processes = Process.GetProcesses();
-            List<string> processNames = new List<string>();
-            foreach (var process in processes)
+            var processNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var process in Process.GetProcesses())
             {
-                if (processNames.Contains(process.ProcessName)) continue;
-                
-                processNames.Add(process.ProcessName);
-                if (_processToExecutableMap.TryGetValue(process.ProcessName, out string executable))
+                if (processNames.Add(process.ProcessName) && _processToExecutableMap.TryGetValue(process.ProcessName, out string executable))
                 {
-                    var matchingLimit = _appLimits.Keys.FirstOrDefault(k => k.Equals(executable.ToLower(), StringComparison.OrdinalIgnoreCase));
+                    var matchingLimit = _appLimits.Keys.FirstOrDefault(k => k.Equals(executable, StringComparison.OrdinalIgnoreCase));
                     if (matchingLimit != null)
                     {
-                        if (!_appUsage.ContainsKey(matchingLimit))
-                        {
-                            _appUsage[matchingLimit] = TimeSpan.Zero;
-                            _appUsage[matchingLimit + "warning"] = TimeSpan.Zero;
-                        }
-                        _logger.LogInformation($"AppUsage {_appUsage.First().Value.ToString()} Updated at {DateTime.Now.ToString("hh:mm:ss fff")}");
+                        _appUsage.TryAdd(matchingLimit, TimeSpan.Zero);
+                        _appUsage.TryAdd(matchingLimit + "warning", TimeSpan.Zero);
                         _appUsage[matchingLimit] += TimeSpan.FromSeconds(1);
                         _appUsage[matchingLimit + "warning"] += TimeSpan.FromSeconds(1);
                     }
                 }
             }
+            _logger.LogInformation($"AppUsage updated at {DateTime.Now:HH:mm:ss fff}");
         }
 
         private async Task EnforceUsageLimits()
         {
             foreach (var app in _appUsage.Keys.ToList())
             {
-                if (await _appRepository.CheckIgnoreStatus(app))
+                if (!_ignoreStatusCache.TryGetValue(app, out bool isIgnored))
                 {
-                    continue; // Skip this app if it's set to be ignored
+                    isIgnored = await _appRepository.CheckIgnoreStatus(app);
+                    _ignoreStatusCache[app] = isIgnored;
                 }
+
+                if (isIgnored) continue;
 
                 if (_appLimits.TryGetValue(app, out TimeSpan limit) && _appUsage[app] >= limit)
                 {
@@ -130,7 +133,11 @@ namespace AppLimiter
                     }
                     else
                     {
-                        if (_processToExecutableMap.TryGetValue(app, out string processName))
+                        var processName = _processToExecutableMap
+                            .FirstOrDefault(x => x.Value.Equals(app, StringComparison.OrdinalIgnoreCase))
+                            .Key;
+
+                        if (!string.IsNullOrEmpty(processName))
                         {
                             var processes = Process.GetProcessesByName(processName);
                             HashSet<string> processedNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
