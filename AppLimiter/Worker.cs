@@ -2,10 +2,10 @@ using System.Data.SqlClient;
 using System.Diagnostics;
 using System.IO.Pipes;
 using System.Text.Json;
-using AppLimiterLibrary;
 using LimiterMessaging;
 using System.Windows.Forms;
 using Microsoft.Extensions.Configuration;
+using AppLimiterLibrary.Data;
 
 namespace AppLimiter
 {

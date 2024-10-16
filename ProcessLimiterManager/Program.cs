@@ -1,4 +1,4 @@
-using AppLimiterLibrary;
+using AppLimiterLibrary.Data;
 using Microsoft.Extensions.Configuration;
 
 namespace ProcessLimiterManager

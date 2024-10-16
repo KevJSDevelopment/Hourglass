@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.Windows.Forms;
 using System.Linq;
 using System.Text.Json;
-using AppLimiterLibrary;
 using Microsoft.Win32;
 using System.IO;
+using AppLimiterLibrary.Data;
+using AppLimiterLibrary.Dtos;
 
 namespace ProcessLimiterManager
 {

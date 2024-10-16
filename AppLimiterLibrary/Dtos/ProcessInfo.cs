@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AppLimiterLibrary
+namespace AppLimiterLibrary.Dtos
 {
     public class ProcessInfo
     {

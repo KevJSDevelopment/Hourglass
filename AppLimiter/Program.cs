@@ -1,5 +1,5 @@
 using AppLimiter;
-using AppLimiterLibrary;
+using AppLimiterLibrary.Data;
 using System;
 using System.Windows;
 

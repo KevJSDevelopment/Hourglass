@@ -1,10 +1,16 @@
-﻿namespace AppLimiterLibrary
+﻿using AppLimiterLibrary.Dtos;
+
+namespace AppLimiterLibrary.Data
 {
     public class AppRepository
     {
         public async Task SaveLimits(ProcessInfo processInfo)
         {
             var sql = @"
+                IF NOT EXISTS (SELECT 1 FROM UserComputers WHERE ComputerId = @ComputerId)
+                    INSERT INTO UserComputers (ComputerId, ComputerName)
+                    VALUES (@ComputerId, NULL);
+
                 IF EXISTS (SELECT 1 FROM Apps WHERE Executable = @Executable AND ComputerId = @ComputerId)
                     UPDATE Apps 
                     SET Name = @Name, Ignore = @Ignore, WarningTime = @WarningTime, KillTime = @KillTime 
