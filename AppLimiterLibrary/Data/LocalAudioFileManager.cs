@@ -6,11 +6,10 @@ public class LocalAudioFileManager
 {
     private readonly string _baseDirectory;
 
-    public LocalAudioFileManager(string appName)
+    public LocalAudioFileManager()
     {
         _baseDirectory = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            appName,
             "MotivationalAudio"
         );
     }
