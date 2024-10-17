@@ -24,10 +24,10 @@ namespace LimiterMessaging
             _messageRepo = new MotivationalMessageRepository();
             _settingsRepo = new SettingsRepository(_computerId);
             _processName = processName;
-            _currentMessage = message;
-            lblMessage.Text = message.Message;
+            _currentMessage = message;  
             _messageNumber = messageNumber;
             InitializeComponent();
+            lblMessage.Text = message.Message;
             DisplayMessage(message);
         }
 

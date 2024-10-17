@@ -200,7 +200,7 @@ namespace AppLimiter
                     Application.EnableVisualStyles();
                     Application.SetCompatibleTextRenderingDefault(false);
 
-                    using (var form = new LimiterMessagingForm(warningMessage, appName, 0))
+                    using (var form = new LimiterMessagingForm(warningMessage, appName))
                     {
                         Application.Run(form);
                     }
