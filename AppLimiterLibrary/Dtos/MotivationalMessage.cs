@@ -14,5 +14,6 @@ namespace AppLimiterLibrary.Dtos
         public string ComputerId { get; set; }
         public string Message { get; set; }
         public string FilePath { get; set; }
+        public string FileName { get; set; }
     }
 }

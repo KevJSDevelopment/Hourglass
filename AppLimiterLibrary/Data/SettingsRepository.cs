@@ -32,5 +32,17 @@ namespace AppLimiterLibrary.Data
                 command.Parameters.AddWithValue("@ComputerId", _computerId);
             });
         }
+
+        public async Task SaveMessageLimit(int newLimit)
+        {
+            var sql = @"UPDATE Settings SET MessageLimit = @NewLimit WHERE ComputerId = @ComputerId";
+
+            await DatabaseManager.ExecuteNonQueryAsync(sql, command =>
+            {
+                command.Parameters.AddWithValue("@ComputerId", _computerId);
+                command.Parameters.AddWithValue("@NewLimit", newLimit);
+            });
+        }
+
     }
 }
