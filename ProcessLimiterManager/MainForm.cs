@@ -19,11 +19,14 @@ namespace ProcessLimiterManager
         private Button btnSetLimits;
         private Button btnAddApplication;
         private Button btnRemoveApplication;
+        private Button btnOpenSettings;
         private AppRepository _appRepository;
+        private string _computerId;
 
         public MainForm()
         {
             _appRepository = new AppRepository();
+            _computerId = ComputerIdentifier.GetUniqueIdentifier();
             SetupComponent();
             _ = LoadApplications();
         }
@@ -73,12 +76,20 @@ namespace ProcessLimiterManager
             };
             btnRemoveApplication.Click += btnRemoveApplication_Click;
 
+            btnOpenSettings = new Button
+            {
+                Text = "Settings",
+                Dock = DockStyle.Bottom
+            };
+            btnOpenSettings.Click += BtnOpenSettings_Click;
+           
+
             this.Controls.Add(listViewApplications);
             this.Controls.Add(btnRefresh);
             this.Controls.Add(btnSetLimits);
             this.Controls.Add(btnAddApplication);
             this.Controls.Add(btnRemoveApplication);
-
+            this.Controls.Add(btnOpenSettings);
         }
 
         private async Task LoadApplications()
@@ -142,6 +153,30 @@ namespace ProcessLimiterManager
             }
         }
 
+        private void BtnOpenSettings_Click(object sender, EventArgs e)
+        {
+            OpenSettingsForm();
+        }
+
+        private void OpenSettingsForm()
+        {
+            using (var settingsForm = new LimiterSettingsForm(_computerId))
+            {
+                if (settingsForm.ShowDialog() == DialogResult.OK)
+                {
+                    // Refresh the main form if necessary
+                    RefreshMainForm();
+                }
+            }
+        }
+
+        private void RefreshMainForm()
+        {
+            // Reload any data or update UI elements that might have changed in settings
+            // For example:
+            // LoadAppLimits();
+            // UpdateUI();
+        }
         private async void btnRefresh_Click(object sender, EventArgs e)
         {
             await LoadApplications();

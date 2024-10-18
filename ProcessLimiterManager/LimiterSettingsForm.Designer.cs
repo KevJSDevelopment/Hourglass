@@ -1,6 +1,6 @@
 ﻿namespace ProcessLimiterManager
 {
-    partial class LimiterSettings
+    partial class LimiterSettingsForm
     {
         /// <summary>
         /// Required designer variable.
@@ -28,32 +28,12 @@
         /// </summary>
         private void InitializeComponent()
         {
-            Motivation = new Label();
-            SuspendLayout();
-            // 
-            // Motivation
-            // 
-            Motivation.AutoSize = true;
-            Motivation.Location = new Point(12, 9);
-            Motivation.Name = "Motivation";
-            Motivation.Size = new Size(38, 15);
-            Motivation.TabIndex = 0;
-            Motivation.Text = "label1";
-            // 
-            // LimiterSettings
-            // 
-            AutoScaleDimensions = new SizeF(7F, 15F);
-            AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(800, 450);
-            Controls.Add(Motivation);
-            Name = "LimiterSettings";
-            Text = "LimiterSettings";
-            ResumeLayout(false);
-            PerformLayout();
+            this.components = new System.ComponentModel.Container();
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Text = "LimiterSettingsForm";
         }
 
         #endregion
-
-        private Label Motivation;
     }
 }

@@ -1,10 +1,6 @@
 ﻿using AppLimiterLibrary.Data;
-using System;
-using System.Diagnostics;
-using System.IO;
-using System.IO.Pipes;
-using System.Threading.Tasks;
-using System.Windows.Forms;
+using AppLimiterLibrary.Dtos;
+using NAudio.Wave;
 
 namespace LimiterMessaging
 {
@@ -14,14 +10,25 @@ namespace LimiterMessaging
         private Label lblMessage;
         private Button okBtn;
         private Button ignoreLimitsBtn;
-        private AppRepository _repo;
-
-        public LimiterMessagingForm(string message, string processName)
+        private AppRepository _appRepo;
+        private MotivationalMessageRepository _messageRepo;
+        private SettingsRepository _settingsRepo;
+        private MotivationalMessage _currentMessage;
+        private string _computerId;
+        private Button PlayAudioBtn;
+        private int _messageNumber;
+        public LimiterMessagingForm(MotivationalMessage message, string processName, int messageNumber = 0)
         {
-            _repo = new AppRepository();
+            _computerId = ComputerIdentifier.GetUniqueIdentifier();
+            _appRepo = new AppRepository();
+            _messageRepo = new MotivationalMessageRepository();
+            _settingsRepo = new SettingsRepository(_computerId);
             _processName = processName;
+            _currentMessage = message;  
+            _messageNumber = messageNumber;
             InitializeComponent();
-            lblMessage.Text = message;
+            lblMessage.Text = message.Message;
+            DisplayMessage(message);
         }
 
         private void InitializeComponent()
@@ -29,6 +36,7 @@ namespace LimiterMessaging
             lblMessage = new Label();
             okBtn = new Button();
             ignoreLimitsBtn = new Button();
+            PlayAudioBtn = new Button();
             SuspendLayout();
             // 
             // lblMessage
@@ -58,9 +66,21 @@ namespace LimiterMessaging
             ignoreLimitsBtn.UseVisualStyleBackColor = true;
             ignoreLimitsBtn.Click += IgnoreLimitsBtn_Click;
             // 
+            // PlayAudioBtn
+            // 
+            PlayAudioBtn.Location = new Point(136, 102);
+            PlayAudioBtn.Name = "PlayAudioBtn";
+            PlayAudioBtn.Size = new Size(75, 23);
+            PlayAudioBtn.TabIndex = 3;
+            PlayAudioBtn.Text = "Play Audio";
+            PlayAudioBtn.UseVisualStyleBackColor = true;
+            PlayAudioBtn.Visible = false;
+            PlayAudioBtn.Click += PlayAudioBtn_Click;
+            // 
             // LimiterMessagingForm
             // 
             ClientSize = new Size(303, 137);
+            Controls.Add(PlayAudioBtn);
             Controls.Add(ignoreLimitsBtn);
             Controls.Add(okBtn);
             Controls.Add(lblMessage);
@@ -73,15 +93,72 @@ namespace LimiterMessaging
             ResumeLayout(false);
         }
 
+        private void DisplayMessage(MotivationalMessage message)
+        {
+            switch (message.TypeId)
+            {
+                case 1: // Text message
+                case 3: // Goal message
+                    lblMessage.Text = message.Message;
+                    break;
+                case 2: // Audio message
+                    lblMessage.Text = "Audio message available";
+                    Controls["playAudioBtn"].Visible = true;
+                    break;
+            }
+        }
+
         private async void IgnoreLimitsBtn_Click(object sender, EventArgs e)
         {
-            await _repo.UpdateIgnoreStatus(_processName, true);
+            int messageLimit = await _settingsRepo.GetMessageLimit();
+
+            if (_messageNumber < messageLimit - 1)
+            {
+                var messages = await _messageRepo.GetMessagesForComputer(_computerId);
+                if (messages.Count > 0)
+                {
+                    Random r = new Random();
+                    var message = messages[r.Next(0, messages.Count)];
+
+                    var newForm = new LimiterMessagingForm(message, _processName, _messageNumber + 1);
+                    newForm.ShowDialog();
+                }
+            }
+            else
+            {
+                await _appRepo.UpdateIgnoreStatus(_processName, true);
+            }
+
             this.Close();
         }
 
         private void OkBtn_Click(object sender, EventArgs e)
         {
             this.Close();
+        }
+
+        private void PlayAudioBtn_Click(object sender, EventArgs e)
+        {
+            if (_currentMessage.TypeId == 2 && !string.IsNullOrEmpty(_currentMessage.FilePath))
+            {
+                try
+                {
+                    using (var audioFile = new AudioFileReader(_currentMessage.FilePath))
+                    using (var outputDevice = new WaveOutEvent())
+                    {
+                        outputDevice.Init(audioFile);
+                        outputDevice.Play();
+                        while (outputDevice.PlaybackState == PlaybackState.Playing)
+                        {
+                            System.Threading.Thread.Sleep(100);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error playing audio: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
         }
     }
 }

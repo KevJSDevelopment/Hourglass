@@ -6,29 +6,28 @@ public class LocalAudioFileManager
 {
     private readonly string _baseDirectory;
 
-    public LocalAudioFileManager(string appName)
+    public LocalAudioFileManager()
     {
         _baseDirectory = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            appName,
             "MotivationalAudio"
         );
     }
 
-    public async Task<string> SaveAudioFileAsync(string computerId, Stream audioStream, string fileExtension)
+    public async Task<string[]> SaveAudioFileAsync(string computerId, Stream audioStream, string fileName, string fileExtension)
     {
         string computerDirectory = Path.Combine(_baseDirectory, computerId);
         Directory.CreateDirectory(computerDirectory);
 
-        string fileName = $"{DateTime.Now:yyyyMMddHHmmss}_{Guid.NewGuid()}{fileExtension}";
-        string filePath = Path.Combine(computerDirectory, fileName);
+        string newFileName = $"{fileName}_{DateTime.Now:yyyyMMddHHmmss}{fileExtension}";
+        string filePath = Path.Combine(computerDirectory, newFileName);
 
         using (var fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write))
         {
             await audioStream.CopyToAsync(fileStream);
         }
 
-        return filePath;
+        return [filePath, newFileName];
     }
 
     public bool DeleteAudioFile(string filePath)

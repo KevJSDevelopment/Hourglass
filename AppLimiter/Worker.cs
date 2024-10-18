@@ -6,6 +6,7 @@ using LimiterMessaging;
 using System.Windows.Forms;
 using Microsoft.Extensions.Configuration;
 using AppLimiterLibrary.Data;
+using AppLimiterLibrary.Dtos;
 
 namespace AppLimiter
 {
@@ -176,11 +177,19 @@ namespace AppLimiter
         {
             var timeRemaining = _appLimits[executablePath] - _appLimits[executablePath + "warning"];
             var appName = Path.GetFileNameWithoutExtension(executablePath);
-            string warningMessage = timeRemaining >= TimeSpan.FromMinutes(1)
+            string msg = timeRemaining >= TimeSpan.FromMinutes(1)
                 ? $"WARNING: You have been using {appName} for an extended period. The application will close in {timeRemaining.Minutes} minutes if usage continues."
                 : $"WARNING: You have been using {appName} for an extended period. The application will close in {timeRemaining.Seconds} seconds if usage continues.";
 
-            _logger.LogWarning(warningMessage);
+            MotivationalMessage warningMessage = new MotivationalMessage()
+            {
+                TypeId = 1,
+                TypeDescription = "Message",
+                FilePath = null,
+                Message = msg
+            };
+
+            _logger.LogWarning(warningMessage.Message);
 
             try
             {
