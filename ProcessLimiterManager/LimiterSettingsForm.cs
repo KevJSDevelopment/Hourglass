@@ -31,8 +31,6 @@ namespace ProcessLimiterManager
         private Button deleteGoalButton;
 
         private NumericUpDown warningCountNumeric;
-        private CheckBox enableSoundCheckBox;
-        private ComboBox themeComboBox;
 
         private Button saveButton;
         private Button cancelButton;
@@ -101,13 +99,10 @@ namespace ProcessLimiterManager
 
             // General Tab
             generalTab = new TabPage("General");
-            warningCountNumeric = new NumericUpDown { Minimum = 1, Maximum = 10, Value = 3, Location = new System.Drawing.Point(150, 10) };
-            Label warningCountLabel = new Label { Text = "Number of warnings:", Location = new System.Drawing.Point(10, 12) };
-            enableSoundCheckBox = new CheckBox { Text = "Enable Sound", Location = new System.Drawing.Point(10, 40) };
-            themeComboBox = new ComboBox { Text = "Theme", Location = new System.Drawing.Point(10, 70) };
-            themeComboBox.Items.AddRange(new object[] { "Light", "Dark" });
+            warningCountNumeric = new NumericUpDown { Minimum = 0, Maximum = 10, Value = 3, Location = new System.Drawing.Point(150, 10) };
+            Label warningCountLabel = new Label { Text = "Limit Warning Count:", Location = new System.Drawing.Point(10, 12) };
 
-            generalTab.Controls.AddRange(new Control[] { warningCountLabel, warningCountNumeric, enableSoundCheckBox, themeComboBox });
+            generalTab.Controls.AddRange(new Control[] { warningCountLabel, warningCountNumeric });
 
             tabControl.TabPages.AddRange(new TabPage[] { messagesTab, audioTab, goalsTab, generalTab });
 
