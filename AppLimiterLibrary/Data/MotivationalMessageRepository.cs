@@ -40,19 +40,20 @@ public class MotivationalMessageRepository
             command.Parameters.AddWithValue("@Message", message);
         });
     }
-    
+
     public async Task<MotivationalMessage> AddAudioMessage(string computerId, Stream audioStream, string fileName, string fileExtension)
     {
         string[] fileInfo = await _audioFileManager.SaveAudioFileAsync(computerId, audioStream, fileName, fileExtension);
         string filePath = fileInfo[0];
         string newFileName = fileInfo[1];
-
         var sql = @"
-            INSERT INTO MotivationalMessage (TypeId, TypeDescription, ComputerId, FilePath, FileName)
-            VALUES (@TypeId, @TypeDescription, @ComputerId, @FilePath, @FileName);
-            SELECT SCOPE_IDENTITY();";
+        INSERT INTO MotivationalMessage (TypeId, TypeDescription, ComputerId, FilePath, FileName)
+        VALUES (@TypeId, @TypeDescription, @ComputerId, @FilePath, @FileName);
+        
+        SELECT * FROM MotivationalMessage 
+        WHERE Id = SCOPE_IDENTITY();";
 
-#pragma warning disable CS8603 // Possible null reference return.
+        #pragma warning disable CS8603 // Possible null reference return.
         return await DatabaseManager.ExecuteQueryAsync(sql, reader =>
         {
             if (reader.Read())
@@ -67,18 +68,17 @@ public class MotivationalMessageRepository
                     FileName = reader["FileName"].ToString()
                 };
             }
-            else return null;
+            return null;
         }, command =>
         {
-            command.Parameters.AddWithValue("@TypeId", 2); // Assuming 2 is the TypeId for audio messages
+            command.Parameters.AddWithValue("@TypeId", 2);
             command.Parameters.AddWithValue("@TypeDescription", "Audio");
             command.Parameters.AddWithValue("@ComputerId", computerId);
             command.Parameters.AddWithValue("@FilePath", filePath);
             command.Parameters.AddWithValue("@FileName", newFileName);
         });
+        #pragma warning restore CS8603 // Possible null reference return.
     }
-#pragma warning restore CS8603 // Possible null reference return.
-
     public async Task<int> AddGoalMessage(string computerId, string goal)
     {
         var sql = @"
