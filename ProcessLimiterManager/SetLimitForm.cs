@@ -8,16 +8,18 @@
         private ComboBox cmbKillTimeHours;
         private ComboBox cmbKillTimeMinutes;
         private ComboBox cmbKillTimeSeconds;
+        private CheckBox checkBoxIgnore;
 
         public string WarningTime { get; private set; }
         public string KillTime { get; private set; }
+        public bool Ignore {  get; private set; }
 
-        public SetLimitForm(string processName, string currentWarningTime, string currentKillTime)
+        public SetLimitForm(string processName, string currentWarningTime, string currentKillTime, bool ignore)
         {
             Text = $"Set Limits for {processName}";
             Size = new System.Drawing.Size(400, 350);
 
-            var lblWarning = new Label { Text = "Warning Time:", Left = 10, Top = 10, Width = 100 };
+            var lblWarning = new Label { Text = "Warning Time:", Left = 10, Top = 15, Width = 100 };
 
             var lblWarningHours = new Label { Text = "Hours:", Left = 10, Top = 35, Width = 40 };
             cmbWarningTimeHours = new ComboBox { Left = 55, Top = 32, Width = 50, DropDownStyle = ComboBoxStyle.DropDownList };
@@ -39,6 +41,8 @@
             var lblKillSeconds = new Label { Text = "Seconds:", Left = 230, Top = 95, Width = 50 };
             cmbKillTimeSeconds = new ComboBox { Left = 285, Top = 92, Width = 50, DropDownStyle = ComboBoxStyle.DropDownList };
 
+            var lblIgnore = new Label { Text = "Ignore Limit", Left = 10, Top = 120, Width = 100 };
+            checkBoxIgnore = new CheckBox { Checked = ignore, Left = 115, Top = 120, Width = 40 };
             PopulateComboBoxes();
 
             var btnOk = new Button { Text = "OK", Left = 10, Top = 140, Width = 75, DialogResult = DialogResult.OK };
@@ -51,7 +55,7 @@
 
             Controls.AddRange(new Control[] {
                 lblWarning, lblWarningHours, cmbWarningTimeHours, lblWarningMinutes, cmbWarningTimeMinutes, lblWarningSeconds, cmbWarningTimeSeconds,
-                lblKill, lblKillHours, cmbKillTimeHours, lblKillMinutes, cmbKillTimeMinutes, lblKillSeconds, cmbKillTimeSeconds,
+                lblKill, lblKillHours, cmbKillTimeHours, lblKillMinutes, cmbKillTimeMinutes, lblKillSeconds, cmbKillTimeSeconds, lblIgnore, checkBoxIgnore,
                 btnOk, btnCancel, btnReset
             });
 
@@ -109,6 +113,7 @@
         {
             WarningTime = $"{cmbWarningTimeHours.SelectedItem}:{cmbWarningTimeMinutes.SelectedItem}:{cmbWarningTimeSeconds.SelectedItem}";
             KillTime = $"{cmbKillTimeHours.SelectedItem}:{cmbKillTimeMinutes.SelectedItem}:{cmbKillTimeSeconds.SelectedItem}";
+            Ignore = checkBoxIgnore.Checked;
         }
 
         private void BtnReset_Click(object sender, EventArgs e)
@@ -119,8 +124,10 @@
             cmbKillTimeHours.SelectedIndex = 0;
             cmbKillTimeMinutes.SelectedIndex = 0;
             cmbKillTimeSeconds.SelectedIndex = 0;
+            checkBoxIgnore.Checked = false;
             WarningTime = "00:00:00";
             KillTime = "00:00:00";
+            Ignore = false;
         }
     }
 }

@@ -16,7 +16,11 @@ namespace LimiterMessaging
         private MotivationalMessage _currentMessage;
         private string _computerId;
         private Button PlayAudioBtn;
+        private Button PauseAudioBtn;
         private int _messageNumber;
+        private WaveOutEvent _outputDevice;
+        private AudioFileReader _audioFile;
+        private bool _isPlaying = false;
         public LimiterMessagingForm(MotivationalMessage message, string processName, int messageNumber = 0)
         {
             _computerId = ComputerIdentifier.GetUniqueIdentifier();
@@ -24,7 +28,7 @@ namespace LimiterMessaging
             _messageRepo = new MotivationalMessageRepository();
             _settingsRepo = new SettingsRepository(_computerId);
             _processName = processName;
-            _currentMessage = message;  
+            _currentMessage = message;
             _messageNumber = messageNumber;
             InitializeComponent();
             lblMessage.Text = message.Message;
@@ -37,6 +41,7 @@ namespace LimiterMessaging
             okBtn = new Button();
             ignoreLimitsBtn = new Button();
             PlayAudioBtn = new Button();
+            PauseAudioBtn = new Button();
             SuspendLayout();
             // 
             // lblMessage
@@ -68,18 +73,29 @@ namespace LimiterMessaging
             // 
             // PlayAudioBtn
             // 
-            PlayAudioBtn.Location = new Point(136, 102);
+            PlayAudioBtn.Location = new Point(116, 100);
             PlayAudioBtn.Name = "PlayAudioBtn";
-            PlayAudioBtn.Size = new Size(75, 23);
+            PlayAudioBtn.Size = new Size(55, 23);
             PlayAudioBtn.TabIndex = 3;
-            PlayAudioBtn.Text = "Play Audio";
+            PlayAudioBtn.Text = "Play";
             PlayAudioBtn.UseVisualStyleBackColor = true;
             PlayAudioBtn.Visible = false;
             PlayAudioBtn.Click += PlayAudioBtn_Click;
             // 
+            // PauseAudioBtn
+            // 
+            PauseAudioBtn.Location = new Point(177, 100);
+            PauseAudioBtn.Name = "PauseAudioBtn";
+            PauseAudioBtn.Size = new Size(55, 23);
+            PauseAudioBtn.TabIndex = 4;
+            PauseAudioBtn.Text = "Pause";
+            PauseAudioBtn.UseVisualStyleBackColor = true;
+            PauseAudioBtn.Click += PauseAudioBtn_Click;
+            // 
             // LimiterMessagingForm
             // 
             ClientSize = new Size(303, 137);
+            Controls.Add(PauseAudioBtn);
             Controls.Add(PlayAudioBtn);
             Controls.Add(ignoreLimitsBtn);
             Controls.Add(okBtn);
@@ -93,6 +109,27 @@ namespace LimiterMessaging
             ResumeLayout(false);
         }
 
+        protected override void OnFormClosing(FormClosingEventArgs e)
+        {
+            base.OnFormClosing(e);
+            DisposeAudioResources();
+        }
+
+        private void DisposeAudioResources()
+        {
+            if (_outputDevice != null)
+            {
+                _outputDevice.Stop();
+                _outputDevice.Dispose();
+                _outputDevice = null;
+            }
+            if (_audioFile != null)
+            {
+                _audioFile.Dispose();
+                _audioFile = null;
+            }
+        }
+
         private void DisplayMessage(MotivationalMessage message)
         {
             switch (message.TypeId)
@@ -100,10 +137,13 @@ namespace LimiterMessaging
                 case 1: // Text message
                 case 3: // Goal message
                     lblMessage.Text = message.Message;
+                    PlayAudioBtn.Visible = false;
+                    PauseAudioBtn.Visible = false;
                     break;
                 case 2: // Audio message
-                    lblMessage.Text = "Audio message available";
-                    Controls["playAudioBtn"].Visible = true;
+                    lblMessage.Text = message.FileName;
+                    PlayAudioBtn.Visible = true;
+                    PauseAudioBtn.Visible = true;
                     break;
             }
         }
@@ -143,22 +183,51 @@ namespace LimiterMessaging
             {
                 try
                 {
-                    using (var audioFile = new AudioFileReader(_currentMessage.FilePath))
-                    using (var outputDevice = new WaveOutEvent())
+                    if (!_isPlaying)
                     {
-                        outputDevice.Init(audioFile);
-                        outputDevice.Play();
-                        while (outputDevice.PlaybackState == PlaybackState.Playing)
+                        // If we're starting fresh, create new instances
+                        if (_outputDevice == null)
                         {
-                            System.Threading.Thread.Sleep(100);
+                            _outputDevice = new WaveOutEvent();
+                            _audioFile = new AudioFileReader(_currentMessage.FilePath);
+                            _outputDevice.Init(_audioFile);
                         }
+
+                        _outputDevice.Play();
+                        _isPlaying = true;
+                        PlayAudioBtn.Text = "Resume";
+                    }
+                    else if (_outputDevice.PlaybackState == PlaybackState.Paused)
+                    {
+                        _outputDevice.Play();
+                        _isPlaying = true;
                     }
                 }
                 catch (Exception ex)
                 {
                     MessageBox.Show($"Error playing audio: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    DisposeAudioResources();
                 }
             }
         }
+
+        private void PauseAudioBtn_Click(object sender, EventArgs e)
+        {
+            if (_outputDevice != null && _isPlaying)
+            {
+                _outputDevice.Pause();
+                _isPlaying = false;
+            }
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                DisposeAudioResources();
+            }
+            base.Dispose(disposing);
+        }
+
     }
 }

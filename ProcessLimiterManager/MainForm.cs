@@ -47,6 +47,7 @@ namespace ProcessLimiterManager
             listViewApplications.Columns.Add("Executable", 200);
             listViewApplications.Columns.Add("Warning Time", 100);
             listViewApplications.Columns.Add("Kill Time", 100);
+            listViewApplications.Columns.Add("Ignore Limit", 200);
 
             btnRefresh = new Button
             {
@@ -109,6 +110,7 @@ namespace ProcessLimiterManager
                 item.SubItems.Add(app.Executable);
                 item.SubItems.Add(app.WarningTime);
                 item.SubItems.Add(app.KillTime);
+                item.SubItems.Add(app.Ignore.ToString());
                 listViewApplications.Items.Add(item);
             }
         }
@@ -187,18 +189,18 @@ namespace ProcessLimiterManager
             if (listViewApplications.SelectedItems.Count > 0)
             {
                 var selectedApp = applications[listViewApplications.SelectedIndices[0]];
-                using (var limitForm = new SetLimitForm(selectedApp.Name, selectedApp.WarningTime, selectedApp.KillTime))
+                using (var limitForm = new SetLimitForm(selectedApp.Name, selectedApp.WarningTime, selectedApp.KillTime, selectedApp.Ignore))
                 {
                     if (limitForm.ShowDialog() == DialogResult.OK)
                     {
                         selectedApp.WarningTime = limitForm.WarningTime;
                         selectedApp.KillTime = limitForm.KillTime;
-
+                        selectedApp.Ignore = limitForm.Ignore;
                         await _appRepository.SaveLimits(selectedApp);
 
                         listViewApplications.SelectedItems[0].SubItems[2].Text = selectedApp.WarningTime;
                         listViewApplications.SelectedItems[0].SubItems[3].Text = selectedApp.KillTime;
-
+                        listViewApplications.SelectedItems[0].SubItems[4].Text = selectedApp.Ignore.ToString();
                         MessageBox.Show("Limits saved successfully.");
                     }
                 }

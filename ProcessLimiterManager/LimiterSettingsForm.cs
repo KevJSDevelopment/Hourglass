@@ -100,19 +100,18 @@ namespace ProcessLimiterManager
             // General Tab
             generalTab = new TabPage("General");
             warningCountNumeric = new NumericUpDown { Minimum = 0, Maximum = 10, Value = 3, Location = new System.Drawing.Point(150, 10) };
-            Label warningCountLabel = new Label { Text = "Limit Warning Count:", Location = new System.Drawing.Point(10, 12) };
-
-            generalTab.Controls.AddRange(new Control[] { warningCountLabel, warningCountNumeric });
-
-            tabControl.TabPages.AddRange(new TabPage[] { messagesTab, audioTab, goalsTab, generalTab });
-
+            Label warningCountLabel = new Label { Text = "Warning Count:", Location = new System.Drawing.Point(10, 12) };
             saveButton = new Button { Text = "Save", Location = new System.Drawing.Point(420, 320) };
             cancelButton = new Button { Text = "Cancel", Location = new System.Drawing.Point(500, 320) };
 
             saveButton.Click += SaveButton_Click;
             cancelButton.Click += CancelButton_Click;
 
-            this.Controls.AddRange(new Control[] { tabControl, saveButton, cancelButton });
+            generalTab.Controls.AddRange(new Control[] { warningCountLabel, warningCountNumeric, saveButton, cancelButton });
+
+            tabControl.TabPages.AddRange(new TabPage[] { messagesTab, audioTab, goalsTab, generalTab });
+
+            this.Controls.AddRange(new Control[] { tabControl });
         }
 
         private async void LoadSettings()
@@ -146,8 +145,6 @@ namespace ProcessLimiterManager
         private async void SaveSettings()
         {
             await _settingsRepo.SaveMessageLimit((int)warningCountNumeric.Value);
-            //await _settingsRepo.SaveEnableSound(enableSoundCheckBox.Checked);
-            //await _settingsRepo.SaveTheme(themeComboBox.SelectedItem.ToString());
         }
 
         private async void AddMessageButton_Click(object sender, EventArgs e)

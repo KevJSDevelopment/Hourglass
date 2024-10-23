@@ -35,7 +35,13 @@ namespace AppLimiterLibrary.Data
 
         public async Task SaveMessageLimit(int newLimit)
         {
-            var sql = @"UPDATE Settings SET MessageLimit = @NewLimit WHERE ComputerId = @ComputerId";
+            var sql = @"
+                        IF NOT EXISTS (SELECT 1 FROM Settings WHERE ComputerId = @ComputerId)
+                                INSERT INTO Settings (ComputerId, MessageLimit)
+                                VALUES (@ComputerId, @NewLimit);
+
+                        ELSE UPDATE Settings SET MessageLimit = @NewLimit WHERE ComputerId = @ComputerId;
+                    ";
 
             await DatabaseManager.ExecuteNonQueryAsync(sql, command =>
             {
