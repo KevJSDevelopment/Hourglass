@@ -30,7 +30,7 @@ namespace ProcessLimiterManager
         private Button editGoalButton;
         private Button deleteGoalButton;
 
-        private NumericUpDown warningCountNumeric;
+        //private NumericUpDown warningCountNumeric;
 
         private Button saveButton;
         private Button cancelButton;
@@ -99,15 +99,15 @@ namespace ProcessLimiterManager
 
             // General Tab
             generalTab = new TabPage("General");
-            warningCountNumeric = new NumericUpDown { Minimum = 0, Maximum = 10, Value = 3, Location = new System.Drawing.Point(150, 10) };
-            Label warningCountLabel = new Label { Text = "Warning Count:", Location = new System.Drawing.Point(10, 12) };
+            //warningCountNumeric = new NumericUpDown { Minimum = 0, Maximum = 10, Value = 1, Location = new System.Drawing.Point(150, 10) };
+            //Label warningCountLabel = new Label { Text = "Warning Count:", Location = new System.Drawing.Point(10, 12) };
             saveButton = new Button { Text = "Save", Location = new System.Drawing.Point(420, 320) };
             cancelButton = new Button { Text = "Cancel", Location = new System.Drawing.Point(500, 320) };
 
             saveButton.Click += SaveButton_Click;
             cancelButton.Click += CancelButton_Click;
 
-            generalTab.Controls.AddRange(new Control[] { warningCountLabel, warningCountNumeric, saveButton, cancelButton });
+            generalTab.Controls.AddRange(new Control[] { saveButton, cancelButton });
 
             tabControl.TabPages.AddRange(new TabPage[] { messagesTab, audioTab, goalsTab, generalTab });
 
@@ -138,13 +138,13 @@ namespace ProcessLimiterManager
             audioListBox.DisplayMember = "FileName";
             goalListBox.DisplayMember = "Message";
 
-            int warningCount = await _settingsRepo.GetMessageLimit();
-            warningCountNumeric.Value = warningCount > 0 ? warningCount : 3;
+            //int warningCount = await _settingsRepo.GetMessageLimit();
+            //warningCountNumeric.Value = warningCount > 0 ? warningCount : 3;
         }
 
         private async void SaveSettings()
         {
-            await _settingsRepo.SaveMessageLimit((int)warningCountNumeric.Value);
+            //await _settingsRepo.SaveMessageLimit((int)warningCountNumeric.Value);
         }
 
         private async void AddMessageButton_Click(object sender, EventArgs e)
