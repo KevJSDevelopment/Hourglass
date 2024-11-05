@@ -6,33 +6,36 @@ namespace LimiterMessaging
 {
     public partial class LimiterMessagingForm : Form
     {
-        private string _processName;
-        private Label lblMessage;
-        private Button okBtn;
-        private Button ignoreLimitsBtn;
-        private AppRepository _appRepo;
-        private MotivationalMessageRepository _messageRepo;
-        private SettingsRepository _settingsRepo;
-        private MotivationalMessage _currentMessage;
-        private string _computerId;
-        private Button PlayAudioBtn;
-        private Button PauseAudioBtn;
-        private int _messageNumber;
+        private readonly string _processName;
+        private readonly AppRepository _appRepo;
+        private readonly MotivationalMessageRepository _messageRepo;
+        private readonly SettingsRepository _settingsRepo;
+        private readonly MotivationalMessage _currentMessage;
+        private readonly Dictionary<string, bool> _ignoreStatusCache = new Dictionary<string, bool>();
+        private readonly string _computerId;
+        private readonly string _timerWarning;
+        private readonly int _messageNumber;
         private WaveOutEvent _outputDevice;
         private AudioFileReader _audioFile;
+        private Button PlayAudioBtn;
+        private Button PauseAudioBtn;
+        private Button okBtn;
+        private Button ignoreLimitsBtn;
+        private Label lblMessage;
         private bool _isPlaying = false;
-        public LimiterMessagingForm(MotivationalMessage message, string processName, int messageNumber = 0)
+        public LimiterMessagingForm(MotivationalMessage message, string timerWarning, string processName, string computerId, Dictionary<string, bool> ignoreStatusCache, AppRepository appRepo, MotivationalMessageRepository messageRepo, SettingsRepository settingsRepo, int messageNumber = 0)
         {
-            _computerId = ComputerIdentifier.GetUniqueIdentifier();
-            _appRepo = new AppRepository();
-            _messageRepo = new MotivationalMessageRepository();
-            _settingsRepo = new SettingsRepository(_computerId);
-            _processName = processName;
             _currentMessage = message;
+            _timerWarning = timerWarning;
+            _processName = processName;
+            _computerId = computerId;
+            _ignoreStatusCache = ignoreStatusCache;
+            _appRepo = appRepo;
+            _messageRepo = messageRepo;
+            _settingsRepo = settingsRepo;
             _messageNumber = messageNumber;
             InitializeComponent();
-            lblMessage.Text = message.Message;
-            DisplayMessage(message);
+            DisplayMessage();
         }
 
         private void InitializeComponent()
@@ -50,6 +53,7 @@ namespace LimiterMessaging
             lblMessage.Name = "lblMessage";
             lblMessage.Size = new Size(279, 87);
             lblMessage.TabIndex = 0;
+            lblMessage.Text = _currentMessage.Message;
             // 
             // okBtn
             // 
@@ -130,20 +134,25 @@ namespace LimiterMessaging
             }
         }
 
-        private void DisplayMessage(MotivationalMessage message)
+        private void DisplayMessage()
         {
-            switch (message.TypeId)
+            switch (_currentMessage.TypeId)
             {
                 case 1: // Text message
-                case 3: // Goal message
-                    lblMessage.Text = message.Message;
+                    lblMessage.Text = _currentMessage.Message + "\n" + _timerWarning;
                     PlayAudioBtn.Visible = false;
                     PauseAudioBtn.Visible = false;
                     break;
                 case 2: // Audio message
-                    lblMessage.Text = message.FileName;
+                    lblMessage.Text = "Give this audio a listen before you decide to ignore your limits: \n" + _currentMessage.FileName;
                     PlayAudioBtn.Visible = true;
                     PauseAudioBtn.Visible = true;
+                    break;
+                case 3: // Goal message
+                    lblMessage.Text = "You have goals to achieve! Did you make progress on this today?: \n" +
+                        "- " + _currentMessage.Message + "\n" + _timerWarning;
+                    PlayAudioBtn.Visible = false;
+                    PauseAudioBtn.Visible = false;
                     break;
             }
         }
@@ -155,25 +164,23 @@ namespace LimiterMessaging
             if (_messageNumber < messageLimit - 1)
             {
                 var messages = await _messageRepo.GetMessagesForComputer(_computerId);
+
                 if (messages.Count > 0)
                 {
                     Random r = new Random();
                     var message = messages[r.Next(0, messages.Count)];
 
-                    var newForm = new LimiterMessagingForm(message, _processName, _messageNumber + 1);
+                    var newForm = new LimiterMessagingForm(message, _timerWarning, _processName, _computerId, _ignoreStatusCache, _appRepo, _messageRepo, _settingsRepo, _messageNumber + 1);
                     newForm.ShowDialog();
                 }
             }
-            else
-            {
-                await _appRepo.UpdateIgnoreStatus(_processName, true);
-            }
-
             this.Close();
         }
 
-        private void OkBtn_Click(object sender, EventArgs e)
+        private async void OkBtn_Click(object sender, EventArgs e)
         {
+            await _appRepo.UpdateIgnoreStatus(_processName, false);
+            _ignoreStatusCache.Clear();
             this.Close();
         }
 

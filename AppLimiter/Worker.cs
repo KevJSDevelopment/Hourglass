@@ -13,16 +13,22 @@ namespace AppLimiter
     public class Worker : BackgroundService
     {
         private readonly ILogger<Worker> _logger;
-        private readonly AppRepository _appRepository;
+        private readonly AppRepository _appRepo;
+        private readonly MotivationalMessageRepository _messageRepo;
+        private readonly SettingsRepository _settingsRepository;
         private readonly Dictionary<string, TimeSpan> _appUsage = new Dictionary<string, TimeSpan>();
         private readonly Dictionary<string, TimeSpan> _appLimits = new Dictionary<string, TimeSpan>();
         private readonly Dictionary<string, string> _processToExecutableMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, bool> _ignoreStatusCache = new Dictionary<string, bool>();
         private readonly HashSet<string> _shownWarnings = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        private Dictionary<string, bool> _ignoreStatusCache = new Dictionary<string, bool>();
+        private readonly string _computerId;
         public Worker(ILogger<Worker> logger, IConfiguration configuration)
         {
             _logger = logger;
-            _appRepository = new AppRepository();
+            _appRepo = new AppRepository();
+            _messageRepo = new MotivationalMessageRepository();
+            _computerId = ComputerIdentifier.GetUniqueIdentifier();
+            _settingsRepository = new SettingsRepository(_computerId);
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -54,11 +60,9 @@ namespace AppLimiter
 
         private async Task LoadAndApplyLimits()
         {
-            var computerId = ComputerIdentifier.GetUniqueIdentifier();
-
             try
             {
-                var limits = await _appRepository.LoadAllLimits(computerId);
+                var limits = await _appRepo.LoadAllLimits(_computerId);
 
                 _appLimits.Clear();
                 _processToExecutableMap.Clear();
@@ -113,19 +117,19 @@ namespace AppLimiter
         {
             foreach (var app in _appUsage.Keys.ToList())
             {
-                if (!_ignoreStatusCache.TryGetValue(app, out bool isIgnored))
+                string baseApp = app.EndsWith("warning") ? app.Substring(0, app.Length - 7) : app; // Remove "warning" suffix
+
+                if (!_ignoreStatusCache.TryGetValue(baseApp, out bool isIgnored))
                 {
-                    isIgnored = await _appRepository.CheckIgnoreStatus(app);
-                    _ignoreStatusCache[app] = isIgnored;
+                    isIgnored = await _appRepo.CheckIgnoreStatus(baseApp);
+                    _ignoreStatusCache[baseApp] = isIgnored;
                 }
 
-                if (isIgnored) continue;
-
-                if (_appLimits.TryGetValue(app, out TimeSpan limit) && _appUsage[app] >= limit)
+                if (_appLimits.TryGetValue(app, out TimeSpan limit) && _appUsage[app] >= limit && !_ignoreStatusCache[baseApp])
                 {
                     if (app.EndsWith("warning"))
                     {
-                        string baseApp = app.Substring(0, app.Length - 7); // Remove "warning" suffix
+                        
                         if (!_shownWarnings.Contains(baseApp))
                         {
                             ShowWarningMessage(baseApp);
@@ -173,34 +177,37 @@ namespace AppLimiter
             }
         }
 
-        private void ShowWarningMessage(string executablePath)
+        private async void ShowWarningMessage(string executablePath)
         {
+            
+
             var timeRemaining = _appLimits[executablePath] - _appLimits[executablePath + "warning"];
             var appName = Path.GetFileNameWithoutExtension(executablePath);
-            string msg = timeRemaining >= TimeSpan.FromMinutes(1)
-                ? $"WARNING: You have been using {appName} for an extended period. The application will close in {timeRemaining.Minutes} minutes if usage continues."
-                : $"WARNING: You have been using {appName} for an extended period. The application will close in {timeRemaining.Seconds} seconds if usage continues.";
 
-            MotivationalMessage warningMessage = new MotivationalMessage()
-            {
-                TypeId = 1,
-                TypeDescription = "Message",
-                FilePath = null,
-                Message = msg
-            };
+            await _appRepo.UpdateIgnoreStatus(appName, true);
+            _ignoreStatusCache[executablePath] = true;
 
-            _logger.LogWarning(warningMessage.Message);
+            string warning = timeRemaining >= TimeSpan.FromMinutes(1)
+                ? $"WARNING: You have been using {appName} for an extended period. The application will close in {timeRemaining.Minutes} minutes once you select OK and usage continues."
+                : $"WARNING: You have been using {appName} for an extended period. The application will close in {timeRemaining.Seconds} seconds once you select OK and usage continues.";
+
+            var messages = await _messageRepo.GetMessagesForComputer(_computerId);
+
+            Random r = new Random();
+            var message = messages[r.Next(0, messages.Count)];
+
+            _logger.LogWarning(string.IsNullOrEmpty(message.Message) ? message.FileName : message.Message);
 
             try
             {
                 // Run the form on a separate thread to avoid blocking the worker
-                Task.Run(() =>
+                _ = Task.Run(() =>
                 {
                     Application.SetHighDpiMode(HighDpiMode.SystemAware);
                     Application.EnableVisualStyles();
                     Application.SetCompatibleTextRenderingDefault(false);
 
-                    using (var form = new LimiterMessagingForm(warningMessage, appName))
+                    using (var form = new LimiterMessagingForm(message, warning, appName, _computerId, _ignoreStatusCache, _appRepo, _messageRepo, _settingsRepository, 0))
                     {
                         Application.Run(form);
                     }

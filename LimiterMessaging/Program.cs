@@ -1,3 +1,4 @@
+using AppLimiterLibrary.Data;
 using AppLimiterLibrary.Dtos;
 
 namespace LimiterMessaging
@@ -25,7 +26,7 @@ namespace LimiterMessaging
 
             if (args.Length >= 2)
             {
-                Application.Run(new LimiterMessagingForm(message, args[1], 0));
+                Application.Run(new LimiterMessagingForm(message, "", args[1],"", new Dictionary<string, bool>(), new AppRepository(), new MotivationalMessageRepository(), new SettingsRepository(""), 0));
             }
             else
             {
