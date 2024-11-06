@@ -11,10 +11,10 @@ namespace LimiterMessaging
         private readonly MotivationalMessageRepository _messageRepo;
         private readonly SettingsRepository _settingsRepo;
         private readonly MotivationalMessage _currentMessage;
+        private readonly List<MotivationalMessage> _messagesSent;
         private readonly Dictionary<string, bool> _ignoreStatusCache = new Dictionary<string, bool>();
         private readonly string _computerId;
         private readonly string _timerWarning;
-        private readonly int _messageNumber;
         private WaveOutEvent _outputDevice;
         private AudioFileReader _audioFile;
         private Button PlayAudioBtn;
@@ -23,7 +23,7 @@ namespace LimiterMessaging
         private Button ignoreLimitsBtn;
         private Label lblMessage;
         private bool _isPlaying = false;
-        public LimiterMessagingForm(MotivationalMessage message, string timerWarning, string processName, string computerId, Dictionary<string, bool> ignoreStatusCache, AppRepository appRepo, MotivationalMessageRepository messageRepo, SettingsRepository settingsRepo, int messageNumber = 0)
+        public LimiterMessagingForm(MotivationalMessage message, string timerWarning, string processName, string computerId, Dictionary<string, bool> ignoreStatusCache, AppRepository appRepo, MotivationalMessageRepository messageRepo, SettingsRepository settingsRepo, List<MotivationalMessage> messagesSent)
         {
             _currentMessage = message;
             _timerWarning = timerWarning;
@@ -33,7 +33,7 @@ namespace LimiterMessaging
             _appRepo = appRepo;
             _messageRepo = messageRepo;
             _settingsRepo = settingsRepo;
-            _messageNumber = messageNumber;
+            _messagesSent = messagesSent == null ? new List<MotivationalMessage>() { _currentMessage } : messagesSent;
             InitializeComponent();
             DisplayMessage();
         }
@@ -160,19 +160,22 @@ namespace LimiterMessaging
         private async void IgnoreLimitsBtn_Click(object sender, EventArgs e)
         {
             int messageLimit = await _settingsRepo.GetMessageLimit();
+            var messages = await _messageRepo.GetMessagesForComputer(_computerId);
 
-            if (_messageNumber < messageLimit - 1)
+            if (_messagesSent.Count < messageLimit - 1 && messages.Count > _messagesSent.Count)
             {
-                var messages = await _messageRepo.GetMessagesForComputer(_computerId);
-
-                if (messages.Count > 0)
+                Random r = new Random();
+                MotivationalMessage message = new MotivationalMessage();
+                int index = -1; 
+                while (_messagesSent.Contains(message) || index == -1)
                 {
-                    Random r = new Random();
-                    var message = messages[r.Next(0, messages.Count)];
-
-                    var newForm = new LimiterMessagingForm(message, _timerWarning, _processName, _computerId, _ignoreStatusCache, _appRepo, _messageRepo, _settingsRepo, _messageNumber + 1);
-                    newForm.ShowDialog();
+                    index = r.Next(0, messages.Count);
+                    message = messages[index];
                 }
+
+                _messagesSent.Add(message);
+                var newForm = new LimiterMessagingForm(message, _timerWarning, _processName, _computerId, _ignoreStatusCache, _appRepo, _messageRepo, _settingsRepo, _messagesSent);
+                newForm.ShowDialog();
             }
             this.Close();
         }

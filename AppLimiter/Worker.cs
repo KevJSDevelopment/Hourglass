@@ -207,7 +207,7 @@ namespace AppLimiter
                     Application.EnableVisualStyles();
                     Application.SetCompatibleTextRenderingDefault(false);
 
-                    using (var form = new LimiterMessagingForm(message, warning, appName, _computerId, _ignoreStatusCache, _appRepo, _messageRepo, _settingsRepository, 0))
+                    using (var form = new LimiterMessagingForm(message, warning, appName, _computerId, _ignoreStatusCache, _appRepo, _messageRepo, _settingsRepository, null))
                     {
                         Application.Run(form);
                     }
