@@ -54,7 +54,6 @@ namespace AppLimiterLibrary.Data
             command => command.Parameters.AddWithValue("@ComputerId", computerId));
         }
 
-
         public async Task UpdateIgnoreStatus(string processName, bool ignore)
         {
             var sql = "UPDATE Apps SET Ignore = @Ignore WHERE Name = @Name AND ComputerId = @ComputerId";

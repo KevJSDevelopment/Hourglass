@@ -1,0 +1,107 @@
+﻿<Window x:Class="ProcessLimiterManager.WPF.Views.SetLimitsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        Title="Set Limits"
+        Height="350" Width="400"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize">
+
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Process Name -->
+        <TextBlock Text="{Binding ProcessName, StringFormat='Set Limits for {0}'}"
+                 FontSize="16"
+                 FontWeight="Bold"
+                 Margin="0,0,0,20"/>
+
+        <!-- Warning Time -->
+        <StackPanel Grid.Row="1" Margin="0,0,0,20">
+            <TextBlock Text="Warning Time:" 
+                     FontWeight="SemiBold"
+                     Margin="0,0,0,5"/>
+            <StackPanel Orientation="Horizontal">
+                <StackPanel Margin="0,0,10,0">
+                    <TextBlock Text="Hours"/>
+                    <ComboBox ItemsSource="{Binding Hours}"
+                            SelectedItem="{Binding SelectedWarningHours}"
+                            Width="60"/>
+                </StackPanel>
+                <StackPanel Margin="0,0,10,0">
+                    <TextBlock Text="Minutes"/>
+                    <ComboBox ItemsSource="{Binding MinutesSeconds}"
+                            SelectedItem="{Binding SelectedWarningMinutes}"
+                            Width="60"/>
+                </StackPanel>
+                <StackPanel>
+                    <TextBlock Text="Seconds"/>
+                    <ComboBox ItemsSource="{Binding MinutesSeconds}"
+                            SelectedItem="{Binding SelectedWarningSeconds}"
+                            Width="60"/>
+                </StackPanel>
+            </StackPanel>
+        </StackPanel>
+
+        <!-- Kill Time -->
+        <StackPanel Grid.Row="2" Margin="0,0,0,20">
+            <TextBlock Text="Kill Time:" 
+                     FontWeight="SemiBold"
+                     Margin="0,0,0,5"/>
+            <StackPanel Orientation="Horizontal">
+                <StackPanel Margin="0,0,10,0">
+                    <TextBlock Text="Hours"/>
+                    <ComboBox ItemsSource="{Binding Hours}"
+                            SelectedItem="{Binding SelectedKillHours}"
+                            Width="60"/>
+                </StackPanel>
+                <StackPanel Margin="0,0,10,0">
+                    <TextBlock Text="Minutes"/>
+                    <ComboBox ItemsSource="{Binding MinutesSeconds}"
+                            SelectedItem="{Binding SelectedKillMinutes}"
+                            Width="60"/>
+                </StackPanel>
+                <StackPanel>
+                    <TextBlock Text="Seconds"/>
+                    <ComboBox ItemsSource="{Binding MinutesSeconds}"
+                            SelectedItem="{Binding SelectedKillSeconds}"
+                            Width="60"/>
+                </StackPanel>
+            </StackPanel>
+        </StackPanel>
+
+        <!-- Ignore Limits -->
+        <CheckBox Grid.Row="3" 
+                 Content="Ignore Limits"
+                 IsChecked="{Binding IgnoreLimits}"
+                 Margin="0,0,0,20"/>
+
+        <!-- Buttons -->
+        <StackPanel Grid.Row="4" 
+                    Orientation="Horizontal" 
+                    HorizontalAlignment="Left">
+            <Button Content="Save"
+                    Command="{Binding SaveCommand}"
+                    Click="SaveButton_Click"
+                    Width="75"
+                    Height="25"
+                    Margin="0,0,10,0"/>
+            <Button Content="Cancel"
+                    Click="CancelButton_Click"
+                    Width="75"
+                    Height="25"
+                    Margin="0,0,10,0"/>
+            <Button Content="Reset"
+                    Command="{Binding ResetCommand}"
+                    Width="75"
+                    Height="25"/>
+        </StackPanel>
+    </Grid>
+</Window>

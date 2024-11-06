@@ -1,0 +1,74 @@
+﻿<Window x:Class="ProcessLimiterManager.WPF.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:ProcessLimiterManager.WPF.ViewModels"
+        mc:Ignorable="d"
+        Title="Application Limiter Manager" 
+        Height="600" Width="800"
+        WindowStartupLocation="CenterScreen">
+
+    <Window.DataContext>
+        <vm:MainViewModel />
+    </Window.DataContext>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <DataGrid Grid.Row="0"
+                  ItemsSource="{Binding Applications}"
+                  SelectedItem="{Binding SelectedApplication}"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="True"
+                  SelectionMode="Single"
+                  Margin="10">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Application Name" 
+                                  Binding="{Binding Name}" 
+                                  Width="250"/>
+                <DataGridTextColumn Header="Executable" 
+                                  Binding="{Binding Executable}" 
+                                  Width="200"/>
+                <DataGridTextColumn Header="Warning Time" 
+                                  Binding="{Binding WarningTime}" 
+                                  Width="100"/>
+                <DataGridTextColumn Header="Kill Time" 
+                                  Binding="{Binding KillTime}" 
+                                  Width="100"/>
+                <DataGridCheckBoxColumn Header="Ignore Limit" 
+                                      Binding="{Binding Ignore}" 
+                                      Width="100"/>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <StackPanel Grid.Row="1" 
+                    Orientation="Horizontal" 
+                    HorizontalAlignment="Center"
+                    Margin="0,0,0,10">
+            <Button Content="Refresh" 
+                    Command="{Binding RefreshCommand}"
+                    Margin="5" 
+                    Padding="10,5"/>
+            <Button Content="Set Limits" 
+                    Command="{Binding SetLimitsCommand}"
+                    Margin="5" 
+                    Padding="10,5"/>
+            <Button Content="Add Application" 
+                    Command="{Binding AddApplicationCommand}"
+                    Margin="5" 
+                    Padding="10,5"/>
+            <Button Content="Remove Application" 
+                    Command="{Binding RemoveApplicationCommand}"
+                    Margin="5" 
+                    Padding="10,5"/>
+            <Button Content="Settings" 
+                    Command="{Binding OpenSettingsCommand}"
+                    Margin="5" 
+                    Padding="10,5"/>
+        </StackPanel>
+    </Grid>
+</Window>
