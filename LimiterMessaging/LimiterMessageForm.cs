@@ -139,18 +139,18 @@ namespace LimiterMessaging
             switch (_currentMessage.TypeId)
             {
                 case 1: // Text message
-                    lblMessage.Text = _currentMessage.Message + "\n" + _timerWarning;
+                    lblMessage.Text = _currentMessage.Message + "\n\n" + _timerWarning;
                     PlayAudioBtn.Visible = false;
                     PauseAudioBtn.Visible = false;
                     break;
                 case 2: // Audio message
-                    lblMessage.Text = "Give this audio a listen before you decide to ignore your limits: \n" + _currentMessage.FileName;
+                    lblMessage.Text = "Give this audio a listen before you decide to ignore your limits: \n\n" + _currentMessage.FileName;
                     PlayAudioBtn.Visible = true;
                     PauseAudioBtn.Visible = true;
                     break;
                 case 3: // Goal message
-                    lblMessage.Text = "You have goals to achieve! Did you make progress on this today?: \n" +
-                        "- " + _currentMessage.Message + "\n" + _timerWarning;
+                    lblMessage.Text = "You have goals to achieve! Did you make progress on this today?: \n\n" +
+                        "- " + _currentMessage.Message + "\n\n" + _timerWarning;
                     PlayAudioBtn.Visible = false;
                     PauseAudioBtn.Visible = false;
                     break;
