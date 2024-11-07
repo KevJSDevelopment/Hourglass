@@ -1,12 +1,5 @@
-using System.Data.SqlClient;
-using System.Diagnostics;
-using System.IO.Pipes;
-using System.Text.Json;
-using LimiterMessaging.WPF;
-using System.Windows.Forms;
-using Microsoft.Extensions.Configuration;
 using AppLimiterLibrary.Data;
-using AppLimiterLibrary.Dtos;
+using System.Diagnostics;
 
 namespace AppLimiter
 {
