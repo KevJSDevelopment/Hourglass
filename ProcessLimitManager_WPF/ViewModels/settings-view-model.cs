@@ -7,7 +7,7 @@ using AppLimiterLibrary.Dtos;
 using Microsoft.Win32;
 using NAudio.Wave;
 using ProcessLimiterManager.WPF.Views;
-using ProcessLimitManager_WPF.Commands;
+using ProcessLimitManager.WPF.Commands;
 
 namespace ProcessLimiterManager.WPF.ViewModels
 {

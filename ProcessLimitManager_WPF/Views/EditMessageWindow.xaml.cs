@@ -1,5 +1,5 @@
 ﻿using ProcessLimiterManager.WPF.ViewModels;
-using ProcessLimitManager_WPF.ViewModels;
+using ProcessLimitManager.WPF.ViewModels;
 using System.Windows;
 
 namespace ProcessLimiterManager.WPF.Views

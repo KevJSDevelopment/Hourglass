@@ -1,8 +1,8 @@
 using System.Windows.Input;
 using ProcessLimiterManager.WPF.ViewModels;
-using ProcessLimitManager_WPF.Commands;
+using ProcessLimitManager.WPF.Commands;
 
-namespace ProcessLimitManager_WPF.ViewModels
+namespace ProcessLimitManager.WPF.ViewModels
 {
     public class EditMessageViewModel : ViewModelBase
     {

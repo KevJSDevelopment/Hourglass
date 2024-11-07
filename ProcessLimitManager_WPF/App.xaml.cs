@@ -4,7 +4,7 @@ using Microsoft.Extensions.Configuration;
 using System.IO;
 using ProcessLimiterManager.WPF.Views;
 
-namespace ProcessLimitManager_WPF
+namespace ProcessLimitManager.WPF
 {
     public partial class App : Application
     {

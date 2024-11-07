@@ -16,7 +16,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AppLimiterLibrary\AppLimiterLibrary.csproj" />
-    <ProjectReference Include="..\LimiterMessaging\LimiterMessaging.csproj" />
+    <ProjectReference Include="..\LimiterMessaging.WPF\LimiterMessaging.WPF.csproj" />
   </ItemGroup>
 
   <ItemGroup>

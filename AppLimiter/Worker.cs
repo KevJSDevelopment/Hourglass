@@ -2,7 +2,7 @@ using System.Data.SqlClient;
 using System.Diagnostics;
 using System.IO.Pipes;
 using System.Text.Json;
-using LimiterMessaging;
+using LimiterMessaging.WPF;
 using System.Windows.Forms;
 using Microsoft.Extensions.Configuration;
 using AppLimiterLibrary.Data;
@@ -179,8 +179,6 @@ namespace AppLimiter
 
         private async void ShowWarningMessage(string executablePath)
         {
-            
-
             var timeRemaining = _appLimits[executablePath] - _appLimits[executablePath + "warning"];
             var appName = Path.GetFileNameWithoutExtension(executablePath);
 
@@ -200,22 +198,48 @@ namespace AppLimiter
 
             try
             {
-                // Run the form on a separate thread to avoid blocking the worker
-                _ = Task.Run(() =>
-                {
-                    Application.SetHighDpiMode(HighDpiMode.SystemAware);
-                    Application.EnableVisualStyles();
-                    Application.SetCompatibleTextRenderingDefault(false);
+                var tcs = new TaskCompletionSource<bool>();
 
-                    using (var form = new LimiterMessagingForm(message, warning, appName, _computerId, _ignoreStatusCache, _appRepo, _messageRepo, _settingsRepository, null))
+                Thread thread = new Thread(() =>
+                {
+                    try
                     {
-                        Application.Run(form);
+                        // Create and configure WPF application
+                        var app = new System.Windows.Application();
+
+                        var window = new LimiterMessaging.WPF.Views.MessagingWindow(
+                            message,
+                            warning,
+                            appName,
+                            _computerId,
+                            _ignoreStatusCache,
+                            _appRepo,
+                            _messageRepo,
+                            _settingsRepository,
+                            null);
+
+                        window.Closed += (s, e) =>
+                        {
+                            app.Shutdown();
+                            tcs.SetResult(true);
+                        };
+
+                        app.Run(window);
+                    }
+                    catch (Exception ex)
+                    {
+                        tcs.SetException(ex);
                     }
                 });
+
+                thread.SetApartmentState(ApartmentState.STA);
+                thread.Start();
+
+                await tcs.Task;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to show LimiterMessaging form.");
+                _logger.LogError(ex, "Failed to show LimiterMessaging window.");
             }
         }
     }

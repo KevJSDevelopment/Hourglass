@@ -1,6 +1,6 @@
 ﻿using System.Windows.Input;
 
-namespace ProcessLimitManager.WPF.Commands
+namespace LimiterMessaging.WPF.Commands
 {
     public class AsyncRelayCommand : ICommand
     {
@@ -42,5 +42,6 @@ namespace ProcessLimitManager.WPF.Commands
                 CommandManager.InvalidateRequerySuggested();
             }
         }
+
     }
 }

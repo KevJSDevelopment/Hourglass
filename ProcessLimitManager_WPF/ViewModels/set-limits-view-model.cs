@@ -1,7 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 using AppLimiterLibrary.Dtos;
-using ProcessLimitManager_WPF.Commands;
+using ProcessLimitManager.WPF.Commands;
 
 namespace ProcessLimiterManager.WPF.ViewModels
 {
