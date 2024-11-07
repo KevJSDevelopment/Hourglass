@@ -5,15 +5,11 @@ VisualStudioVersion = 17.10.35122.118
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AppLimiter", "AppLimiter\AppLimiter.csproj", "{D96A7E0D-C131-4DF0-8466-CD17567A6F52}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LimiterMessaging", "LimiterMessaging\LimiterMessaging.csproj", "{44FE3B46-3F19-418F-9E22-FCC76AA85140}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProcessLimiterManager", "ProcessLimiterManager\ProcessLimiterManager.csproj", "{CC78FBD2-4929-401E-BD08-8552470242F8}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AppLimiterLibrary", "AppLimiterLibrary\AppLimiterLibrary.csproj", "{CB81D97E-85E9-40D6-AA51-95747FDF79EF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProcessLimitManager.WPF", "ProcessLimitManager_WPF\ProcessLimitManager.WPF.csproj", "{51186B8C-EA79-4BF5-8B06-275F15629E25}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProcessLimitManager.WPF", "ProcessLimitManager_WPF\ProcessLimitManager.WPF.csproj", "{51186B8C-EA79-4BF5-8B06-275F15629E25}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LimiterMessaging.WPF", "LimiterMessaging.WPF\LimiterMessaging.WPF.csproj", "{8DFFFCD1-741F-4050-B767-B9E4E94C9AA9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LimiterMessaging.WPF", "LimiterMessaging.WPF\LimiterMessaging.WPF.csproj", "{8DFFFCD1-741F-4050-B767-B9E4E94C9AA9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -25,14 +21,6 @@ Global
 		{D96A7E0D-C131-4DF0-8466-CD17567A6F52}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D96A7E0D-C131-4DF0-8466-CD17567A6F52}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D96A7E0D-C131-4DF0-8466-CD17567A6F52}.Release|Any CPU.Build.0 = Release|Any CPU
-		{44FE3B46-3F19-418F-9E22-FCC76AA85140}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{44FE3B46-3F19-418F-9E22-FCC76AA85140}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{44FE3B46-3F19-418F-9E22-FCC76AA85140}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{44FE3B46-3F19-418F-9E22-FCC76AA85140}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CC78FBD2-4929-401E-BD08-8552470242F8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CC78FBD2-4929-401E-BD08-8552470242F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CC78FBD2-4929-401E-BD08-8552470242F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CC78FBD2-4929-401E-BD08-8552470242F8}.Release|Any CPU.Build.0 = Release|Any CPU
 		{CB81D97E-85E9-40D6-AA51-95747FDF79EF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{CB81D97E-85E9-40D6-AA51-95747FDF79EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CB81D97E-85E9-40D6-AA51-95747FDF79EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
