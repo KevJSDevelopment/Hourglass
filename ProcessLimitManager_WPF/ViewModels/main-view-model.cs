@@ -6,7 +6,6 @@ using AppLimiterLibrary.Dtos;
 using Microsoft.Win32;
 using ProcessLimitManager.WPF.Views;
 using ProcessLimitManager.WPF.Commands;
-using ProcessLimitManager.WPF.Themes; // Add this for ThemeManager
 
 namespace ProcessLimitManager.WPF.ViewModels
 {
