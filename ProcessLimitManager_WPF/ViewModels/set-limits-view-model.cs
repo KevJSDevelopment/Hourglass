@@ -3,7 +3,7 @@ using System.Windows.Input;
 using AppLimiterLibrary.Dtos;
 using ProcessLimitManager.WPF.Commands;
 
-namespace ProcessLimiterManager.WPF.ViewModels
+namespace ProcessLimitManager.WPF.ViewModels
 {
     public class SetLimitsViewModel : ViewModelBase
     {

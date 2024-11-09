@@ -1,13 +1,14 @@
-﻿<Window x:Class="ProcessLimiterManager.WPF.Views.MainWindow"
+﻿<Window x:Class="ProcessLimitManager.WPF.Views.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:vm="clr-namespace:ProcessLimiterManager.WPF.ViewModels"
+        xmlns:vm="clr-namespace:ProcessLimitManager.WPF.ViewModels"
         mc:Ignorable="d"
         Title="Application Limiter Manager" 
         Height="600" Width="800"
-        WindowStartupLocation="CenterScreen">
+        WindowStartupLocation="CenterScreen"
+        Background="{StaticResource BackgroundBrush}">
 
     <Window.DataContext>
         <vm:MainViewModel />
@@ -15,11 +16,24 @@
 
     <Grid>
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <DataGrid Grid.Row="0"
+        <!-- Theme Toggle -->
+        <StackPanel Grid.Row="0"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Center"
+                    Margin="5">
+            <TextBlock Text="App Limits" 
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Center"
+                       Margin="0,0,0,0"
+                       Foreground="{StaticResource ForegroundBrush}"/>
+        </StackPanel>
+        <!-- DataGrid -->
+        <DataGrid Grid.Row="1"
                   ItemsSource="{Binding Applications}"
                   SelectedItem="{Binding SelectedApplication}"
                   AutoGenerateColumns="False"
@@ -29,23 +43,48 @@
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Application Name" 
                                   Binding="{Binding Name}" 
-                                  Width="250"/>
+                                  Width="250">
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}"/>
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
                 <DataGridTextColumn Header="Executable" 
                                   Binding="{Binding Executable}" 
-                                  Width="200"/>
+                                  Width="200">
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}"/>
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
                 <DataGridTextColumn Header="Warning Time" 
                                   Binding="{Binding WarningTime}" 
-                                  Width="100"/>
+                                  Width="100">
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}"/>
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
                 <DataGridTextColumn Header="Kill Time" 
                                   Binding="{Binding KillTime}" 
-                                  Width="100"/>
+                                  Width="100">
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}"/>
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
                 <DataGridCheckBoxColumn Header="Ignore Limit" 
                                       Binding="{Binding Ignore}" 
                                       Width="100"/>
             </DataGrid.Columns>
         </DataGrid>
 
-        <StackPanel Grid.Row="1" 
+        <!-- Bottom Buttons -->
+        <StackPanel Grid.Row="2" 
                     Orientation="Horizontal" 
                     HorizontalAlignment="Center"
                     Margin="0,0,0,10">

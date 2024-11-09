@@ -1,8 +1,8 @@
-﻿using ProcessLimiterManager.WPF.ViewModels;
+﻿using ProcessLimitManager.WPF.ViewModels;
 using System.ComponentModel;
 using System.Windows;
 
-namespace ProcessLimiterManager.WPF.Views
+namespace ProcessLimitManager.WPF.Views
 {
     public partial class SettingsWindow : Window
     {

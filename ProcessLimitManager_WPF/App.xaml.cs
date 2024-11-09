@@ -2,7 +2,7 @@
 using AppLimiterLibrary.Data;
 using Microsoft.Extensions.Configuration;
 using System.IO;
-using ProcessLimiterManager.WPF.Views;
+using ProcessLimitManager.WPF.Views;
 
 namespace ProcessLimitManager.WPF
 {

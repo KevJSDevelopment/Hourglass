@@ -4,10 +4,11 @@ using System.Windows.Input;
 using AppLimiterLibrary.Data;
 using AppLimiterLibrary.Dtos;
 using Microsoft.Win32;
-using ProcessLimiterManager.WPF.Views;
+using ProcessLimitManager.WPF.Views;
 using ProcessLimitManager.WPF.Commands;
+using ProcessLimitManager.WPF.Themes; // Add this for ThemeManager
 
-namespace ProcessLimiterManager.WPF.ViewModels
+namespace ProcessLimitManager.WPF.ViewModels
 {
     public class MainViewModel : ViewModelBase
     {
@@ -15,7 +16,6 @@ namespace ProcessLimiterManager.WPF.ViewModels
         private readonly string _computerId;
         private ObservableCollection<ProcessInfo> _applications;
         private ProcessInfo _selectedApplication;
-
         public ICommand RefreshCommand { get; }
         public ICommand SetLimitsCommand { get; }
         public ICommand AddApplicationCommand { get; }

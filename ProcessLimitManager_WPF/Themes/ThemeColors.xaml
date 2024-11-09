@@ -1,0 +1,26 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- Base Colors -->
+    <Color x:Key="DarkBaseColor">#FF243E36</Color>
+    <Color x:Key="LightBaseColor">#FFF1F7ED</Color>
+    <Color x:Key="AccentColor">#FF7CA982</Color>
+
+    <!-- Light Theme Colors -->
+    <Color x:Key="LightPrimaryBackground">#FFF1F7ED</Color>
+    <Color x:Key="LightSecondaryBackground">#FFFFFFFF</Color>
+    <Color x:Key="LightBorderColor">#FFE0E0E0</Color>
+    <Color x:Key="LightTextColor">#FF243E36</Color>
+
+    <!-- Dark Theme Colors -->
+    <Color x:Key="DarkPrimaryBackground">#FF243E36</Color>
+    <Color x:Key="DarkSecondaryBackground">#FF1A2D27</Color>
+    <Color x:Key="DarkBorderColor">#FF2F4F44</Color>
+    <Color x:Key="DarkTextColor">#FFF1F7ED</Color>
+
+    <!-- Theme-Independent Colors -->
+    <Color x:Key="AccentHoverColor">#FF8FB594</Color>
+    <Color x:Key="AccentPressedColor">#FF699470</Color>
+    <Color x:Key="ErrorColor">#FFDC3545</Color>
+    <Color x:Key="WarningColor">#FFFFC107</Color>
+    <Color x:Key="SuccessColor">#FF28A745</Color>
+</ResourceDictionary>

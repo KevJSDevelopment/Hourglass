@@ -4,7 +4,7 @@ using System.Windows.Input;
 using System.Threading.Tasks;
 
 
-namespace ProcessLimiterManager.WPF.ViewModels
+namespace ProcessLimitManager.WPF.ViewModels
 {
     public class ViewModelBase : INotifyPropertyChanged
     {

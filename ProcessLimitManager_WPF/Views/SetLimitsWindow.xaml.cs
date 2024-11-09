@@ -1,8 +1,8 @@
 ﻿using AppLimiterLibrary.Dtos;
-using ProcessLimiterManager.WPF.ViewModels;
+using ProcessLimitManager.WPF.ViewModels;
 using System.Windows;
 
-namespace ProcessLimiterManager.WPF.Views
+namespace ProcessLimitManager.WPF.Views
 {
     public partial class SetLimitsWindow : Window
     {

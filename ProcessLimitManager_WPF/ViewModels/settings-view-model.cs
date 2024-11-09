@@ -6,10 +6,10 @@ using AppLimiterLibrary.Data;
 using AppLimiterLibrary.Dtos;
 using Microsoft.Win32;
 using NAudio.Wave;
-using ProcessLimiterManager.WPF.Views;
+using ProcessLimitManager.WPF.Views;
 using ProcessLimitManager.WPF.Commands;
 
-namespace ProcessLimiterManager.WPF.ViewModels
+namespace ProcessLimitManager.WPF.ViewModels
 {
     public class SettingsViewModel : ViewModelBase
     {
