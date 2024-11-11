@@ -1,4 +1,5 @@
 using AppLimiterLibrary.Data;
+using AppLimiterLibrary.Dtos;
 using System.Diagnostics;
 
 namespace AppLimiter
@@ -196,7 +197,7 @@ namespace AppLimiter
                         var app = new LimiterMessaging.WPF.App(); // Use your actual App class instead
                         app.InitializeComponent();
 
-                        var window = new LimiterMessaging.WPF.Views.MessagingWindow(
+                       var window = new LimiterMessaging.WPF.Views.MessagingWindow(
                             message,
                             warning,
                             appName,
