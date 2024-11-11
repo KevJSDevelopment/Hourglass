@@ -6,6 +6,7 @@ using System.Windows.Input;
 using System.Windows;
 using LimiterMessaging.WPF.ViewModels;
 using LimiterMessaging.WPF.Commands;
+using System.Windows.Threading;
 
 public class MessagingViewModel : ViewModelBase, IDisposable
 {
@@ -21,7 +22,30 @@ public class MessagingViewModel : ViewModelBase, IDisposable
     private readonly AudioService _audioService;
     private string _displayMessage;
     private bool _showAudioControls;
+    private readonly DispatcherTimer _timer;
+    private double _currentPosition;
+    private double _duration;
+    private bool _isPlaying;
+    public double CurrentPosition
+    {
+        get => _currentPosition;
+        set => SetProperty(ref _currentPosition, value);
+    }
 
+    public double Duration
+    {
+        get => _duration;
+        set => SetProperty(ref _duration, value);
+    }
+
+    public bool IsPlaying
+    {
+        get => _isPlaying;
+        set => SetProperty(ref _isPlaying, value);
+    }
+
+    public string CurrentPositionText => TimeSpan.FromSeconds(CurrentPosition).ToString(@"m\:ss");
+    public string DurationText => TimeSpan.FromSeconds(Duration).ToString(@"m\:ss");
     public string DisplayMessage
     {
         get => _displayMessage;
@@ -38,6 +62,8 @@ public class MessagingViewModel : ViewModelBase, IDisposable
     public ICommand IgnoreLimitsCommand { get; }
     public ICommand PlayAudioCommand { get; }
     public ICommand PauseAudioCommand { get; }
+    public ICommand PlayPauseCommand { get; }
+    public ICommand SeekCommand { get; }
 
     public MessagingViewModel(
         MotivationalMessage message,
@@ -61,11 +87,33 @@ public class MessagingViewModel : ViewModelBase, IDisposable
         _messagesSent = messagesSent ?? new List<MotivationalMessage> { _currentMessage };
         _audioService = new AudioService();
 
+        _timer = new DispatcherTimer
+        {
+            Interval = TimeSpan.FromMilliseconds(100)
+        };
+        _timer.Tick += Timer_Tick;
+
         // Initialize commands with lambda expressions
         OkCommand = new AsyncRelayCommand(_ => OnOk(_));
         IgnoreLimitsCommand = new AsyncRelayCommand(_ => OnIgnoreLimits(_));
         PlayAudioCommand = new RelayCommand(_ => PlayAudio(), _ => _currentMessage?.TypeId == 2);
         PauseAudioCommand = new RelayCommand(_ => PauseAudio(), _ => _currentMessage?.TypeId == 2);
+
+        PlayPauseCommand = new RelayCommand(_ => PlayPauseAudio());
+        SeekCommand = new RelayCommand(param =>
+        {
+            if (param is double position)
+            {
+                _audioService.SeekToPosition(TimeSpan.FromSeconds(position));
+            }
+        });
+
+        // Auto-play if it's an audio message
+        if (_currentMessage.TypeId == 2)
+        {
+            PlayAudio();
+        }
+
 
         UpdateDisplay();
     }
@@ -133,6 +181,28 @@ public class MessagingViewModel : ViewModelBase, IDisposable
             MessageBox.Show($"Error processing ignore limits: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
+    private void Timer_Tick(object sender, EventArgs e)
+    {
+        if (_audioService.AudioFile != null)
+        {
+            CurrentPosition = _audioService.CurrentTime.TotalSeconds;
+            Duration = _audioService.TotalTime.TotalSeconds;
+            OnPropertyChanged(nameof(CurrentPositionText));
+            OnPropertyChanged(nameof(DurationText));
+        }
+    }
+
+    private void PlayPauseAudio()
+    {
+        if (_isPlaying)
+        {
+            PauseAudio();
+        }
+        else
+        {
+            PlayAudio();
+        }
+    }
 
     private void PlayAudio()
     {
@@ -141,6 +211,8 @@ public class MessagingViewModel : ViewModelBase, IDisposable
             if (_currentMessage.TypeId == 2 && !string.IsNullOrEmpty(_currentMessage.FilePath))
             {
                 _audioService.PlayAudio(_currentMessage.FilePath);
+                IsPlaying = true;
+                _timer.Start();
             }
         }
         catch (Exception ex)
@@ -151,20 +223,16 @@ public class MessagingViewModel : ViewModelBase, IDisposable
 
     private void PauseAudio()
     {
-        try
-        {
-            _audioService.PauseAudio();
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show($"Error pausing audio: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-        }
+        _audioService.PauseAudio();
+        IsPlaying = false;
+        _timer.Stop();
     }
 
     public event Action RequestClose;
 
     public void Dispose()
     {
-        _audioService.Dispose();
+        _timer?.Stop();
+        _audioService?.Dispose();
     }
 }

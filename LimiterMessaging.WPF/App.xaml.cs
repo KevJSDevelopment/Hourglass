@@ -6,10 +6,14 @@ namespace LimiterMessaging.WPF
 {
     public partial class App : Application
     {
+        public App()
+        {
+            InitializeComponent();
+        }
+
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
-
             try
             {
                 if (e.Args.Length >= 2)
@@ -23,7 +27,6 @@ namespace LimiterMessaging.WPF
                         Message = e.Args[0],
                         FilePath = null
                     };
-
                     var window = new Views.MessagingWindow(
                         message,
                         "",
@@ -34,7 +37,6 @@ namespace LimiterMessaging.WPF
                         new MotivationalMessageRepository(),
                         new SettingsRepository(""),
                         null);
-
                     window.Show();
                 }
                 else

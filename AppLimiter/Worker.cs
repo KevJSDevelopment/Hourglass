@@ -174,7 +174,6 @@ namespace AppLimiter
         {
             var timeRemaining = _appLimits[executablePath] - _appLimits[executablePath + "warning"];
             var appName = Path.GetFileNameWithoutExtension(executablePath);
-
             await _appRepo.UpdateIgnoreStatus(appName, true);
             _ignoreStatusCache[executablePath] = true;
 
@@ -183,22 +182,19 @@ namespace AppLimiter
                 : $"WARNING: You have been using {appName} for an extended period. The application will close in {timeRemaining.Seconds} seconds once you select OK and usage continues.";
 
             var messages = await _messageRepo.GetMessagesForComputer(_computerId);
-
             Random r = new Random();
             var message = messages[r.Next(0, messages.Count)];
-
             _logger.LogWarning(string.IsNullOrEmpty(message.Message) ? message.FileName : message.Message);
 
             try
             {
                 var tcs = new TaskCompletionSource<bool>();
-
                 Thread thread = new Thread(() =>
                 {
                     try
                     {
-                        // Create and configure WPF application
-                        var app = new System.Windows.Application();
+                        var app = new LimiterMessaging.WPF.App(); // Use your actual App class instead
+                        app.InitializeComponent();
 
                         var window = new LimiterMessaging.WPF.Views.MessagingWindow(
                             message,
@@ -222,6 +218,7 @@ namespace AppLimiter
                     catch (Exception ex)
                     {
                         tcs.SetException(ex);
+                        _logger.LogError(ex, "Error initializing messaging window");
                     }
                 });
 

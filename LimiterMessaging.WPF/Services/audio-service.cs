@@ -9,6 +9,10 @@ namespace LimiterMessaging.WPF.Services
         private bool _isPlaying;
 
         public bool IsPlaying => _isPlaying;
+        public AudioFileReader AudioFile => _audioFile;
+
+        public TimeSpan CurrentTime => _audioFile?.CurrentTime ?? TimeSpan.Zero;
+        public TimeSpan TotalTime => _audioFile?.TotalTime ?? TimeSpan.Zero;
 
         public void PlayAudio(string filePath)
         {
@@ -22,7 +26,6 @@ namespace LimiterMessaging.WPF.Services
                         _audioFile = new AudioFileReader(filePath);
                         _outputDevice.Init(_audioFile);
                     }
-
                     _outputDevice.Play();
                     _isPlaying = true;
                 }
@@ -44,6 +47,14 @@ namespace LimiterMessaging.WPF.Services
             {
                 _outputDevice.Pause();
                 _isPlaying = false;
+            }
+        }
+
+        public void SeekToPosition(TimeSpan position)
+        {
+            if (_audioFile != null)
+            {
+                _audioFile.CurrentTime = position;
             }
         }
 

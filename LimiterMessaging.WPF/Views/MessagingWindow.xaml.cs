@@ -18,7 +18,8 @@ namespace LimiterMessaging.WPF.Views
             AppRepository appRepo,
             MotivationalMessageRepository messageRepo,
             SettingsRepository settingsRepo,
-            List<MotivationalMessage> messagesSent)
+            List<MotivationalMessage> messagesSent
+            )
         {
             InitializeComponent();
             _viewModel = new MessagingViewModel(
