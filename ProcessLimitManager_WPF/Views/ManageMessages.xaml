@@ -7,6 +7,6 @@
         mc:Ignorable="d"
         Title="ManageMessages" Height="450" Width="800">
     <Grid>
-        
+        <TextBlock Text="Needs to handle audio, goal, and normal messaging" />
     </Grid>
 </Window>
