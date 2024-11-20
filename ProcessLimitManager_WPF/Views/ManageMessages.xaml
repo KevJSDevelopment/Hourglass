@@ -3,10 +3,148 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:ProcessLimitManager.WPF.Views"
+        xmlns:vm="clr-namespace:ProcessLimitManager.WPF.ViewModels"
         mc:Ignorable="d"
-        Title="ManageMessages" Height="450" Width="800">
-    <Grid>
-        <TextBlock Text="Needs to handle audio, goal, and normal messaging" />
+        Title="Manage Messages" 
+        Height="600" Width="800"
+        WindowStartupLocation="CenterScreen"
+        Background="{StaticResource BackgroundBrush}">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Add Message Section -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,20">
+            <TextBlock Text="Add New Message"
+                     Foreground="{StaticResource DarkTextBrush}"
+                     FontSize="16"
+                     FontWeight="SemiBold"
+                     Margin="0,0,0,10"/>
+
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                <RadioButton Content="Text Message" 
+                            IsChecked="{Binding IsTextMessageSelected}"
+                            GroupName="MessageType"
+                            Foreground="{StaticResource DarkTextBrush}"
+                            Margin="0,0,15,0"/>
+                <RadioButton Content="Audio Message"
+                            IsChecked="{Binding IsAudioMessageSelected}"
+                            GroupName="MessageType"
+                            Foreground="{StaticResource DarkTextBrush}"
+                            Margin="0,0,15,0"/>
+                <RadioButton Content="Goal Message"
+                            IsChecked="{Binding IsGoalMessageSelected}"
+                            GroupName="MessageType"
+                            Foreground="{StaticResource DarkTextBrush}"/>
+            </StackPanel>
+
+            <!-- Text/Goal Input (Visible when Text or Goal is selected) -->
+            <Grid Visibility="{Binding ShowTextInput}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBox Grid.Column="0"
+                        Text="{Binding NewMessageText, UpdateSourceTrigger=PropertyChanged}"
+                        Margin="0,0,10,0"
+                        Height="30"/>
+                <Button Grid.Column="1"
+                        Content="Add Message"
+                        Command="{Binding AddMessageCommand}"
+                        Width="100"/>
+            </Grid>
+
+            <!-- Audio Input (Visible when Audio is selected) -->
+            <Grid Visibility="{Binding ShowAudioInput}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="{Binding SelectedAudioFile}"
+                          Foreground="{StaticResource DarkTextBrush}"
+                          VerticalAlignment="Center"/>
+                <Button Grid.Column="1"
+                        Content="Select Audio File"
+                        Command="{Binding SelectAudioFileCommand}"
+                        Width="100"/>
+            </Grid>
+        </StackPanel>
+
+        <!-- Messages List -->
+        <Grid Grid.Row="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- List Header -->
+            <TextBlock Text="Messages"
+                      Foreground="{StaticResource DarkTextBrush}"
+                      FontSize="16"
+                      FontWeight="SemiBold"
+                      Margin="0,0,0,10"/>
+
+            <!-- Messages DataGrid -->
+            <DataGrid Grid.Row="1"
+                      ItemsSource="{Binding Messages}"
+                      SelectedItem="{Binding SelectedMessage}"
+                      AutoGenerateColumns="False"
+                      Background="Transparent"
+                      BorderThickness="1"
+                      BorderBrush="{StaticResource BorderBrush}"
+                      RowHeaderWidth="0">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Type"
+                                      Binding="{Binding TypeDescription}"
+                                      Width="100"/>
+                    <DataGridTextColumn Header="Message/File"
+                                      Binding="{Binding Message}"
+                                      Width="*"/>
+                    <DataGridTemplateColumn Width="Auto">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal">
+                                    <Button Content="Play"
+                                            Command="{Binding DataContext.PlayAudioCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                            CommandParameter="{Binding}"
+                                            Visibility="{Binding IsAudio}"
+                                            Margin="0,0,5,0"
+                                            Width="60"/>
+                                    <Button Content="Edit"
+                                            Command="{Binding DataContext.EditMessageCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                            CommandParameter="{Binding}"
+                                            Visibility="{Binding CanEdit}"
+                                            Margin="0,0,5,0"
+                                            Width="60"/>
+                                    <Button Content="Delete"
+                                            Command="{Binding DataContext.DeleteMessageCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                            CommandParameter="{Binding}"
+                                            Width="60"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Grid>
+
+        <!-- Bottom Buttons -->
+        <StackPanel Grid.Row="2" 
+                    Orientation="Horizontal" 
+                    HorizontalAlignment="Right"
+                    Margin="0,20,0,0">
+            <Button Content="Save"
+                    Command="{Binding SaveCommand}"
+                    Width="80"
+                    Height="30"
+                    Margin="0,0,10,0"/>
+            <Button Content="Cancel"
+                    Command="{Binding CancelCommand}"
+                    Width="80"
+                    Height="30"/>
+        </StackPanel>
     </Grid>
 </Window>

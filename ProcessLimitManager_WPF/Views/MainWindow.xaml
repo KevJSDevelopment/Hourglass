@@ -104,6 +104,10 @@
                     Command="{Binding RemoveApplicationCommand}"
                     Margin="5" 
                     Padding="10,5"/>
+            <Button Content="Manage Messages"
+                    Command="{Binding ManageMessagesCommand}"
+                    Margin="5"
+                    Padding="10,5"/>
             <Button Content="Settings" 
                     Command="{Binding OpenSettingsCommand}"
                     Margin="5" 

@@ -1,16 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
+﻿using System.Windows;
 
 namespace ProcessLimitManager.WPF.Views
 {
@@ -19,9 +7,19 @@ namespace ProcessLimitManager.WPF.Views
     /// </summary>
     public partial class ManageMessages : Window
     {
-        public ManageMessages()
+        public ManageMessages(string computerId)
         {
             InitializeComponent();
+            DataContext = new ViewModels.ManageMessagesViewModel(computerId);
+        }
+
+        protected override void OnClosed(EventArgs e)
+        {
+            base.OnClosed(e);
+            if (DataContext is ViewModels.ManageMessagesViewModel viewModel)
+            {
+                viewModel.Cleanup();
+            }
         }
     }
 }

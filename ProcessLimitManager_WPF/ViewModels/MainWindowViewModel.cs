@@ -20,6 +20,7 @@ namespace ProcessLimitManager.WPF.ViewModels
         public ICommand AddApplicationCommand { get; }
         public ICommand RemoveApplicationCommand { get; }
         public ICommand OpenSettingsCommand { get; }
+        public ICommand ManageMessagesCommand { get; }
 
         public ObservableCollection<ProcessInfo> Applications
         {
@@ -51,7 +52,7 @@ namespace ProcessLimitManager.WPF.ViewModels
             AddApplicationCommand = new AsyncRelayCommand(AddApplicationAsync);
             RemoveApplicationCommand = new AsyncRelayCommand(RemoveApplicationAsync, _ => SelectedApplication != null);
             OpenSettingsCommand = new RelayCommand(_ => OpenSettings());
-
+            ManageMessagesCommand = new RelayCommand(_ => ManageMessages());
             // Load applications on startup
             _ = LoadApplicationsAsync();
         }
@@ -107,6 +108,12 @@ namespace ProcessLimitManager.WPF.ViewModels
                     await LoadApplicationsAsync();
                 }
             }
+        }
+
+        private void ManageMessages()
+        {
+            var messagesWindow = new ManageMessages(_computerId);
+            messagesWindow.ShowDialog();
         }
 
         private void OpenSettings()
