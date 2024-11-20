@@ -117,7 +117,7 @@ namespace ProcessLimitManager.WPF.ViewModels
             EditMessageCommand = new AsyncRelayCommand(EditMessage, _ => SelectedMessage?.TypeId != 2);
             DeleteMessageCommand = new AsyncRelayCommand(DeleteMessage, _ => SelectedMessage != null);
             PlayAudioCommand = new RelayCommand(_ => PlayAudio(), _ => SelectedMessage?.TypeId == 2);
-            SelectAudioFileCommand = new AsyncRelayCommand(_ => SelectAudioFile());
+            SelectAudioFileCommand = new AsyncRelayCommand(_ => SelectAudioFile(), _ => IsAudioMessageSelected);
             SaveCommand = new RelayCommand(_ => Save());
             CancelCommand = new RelayCommand(_ => Cancel());
 
