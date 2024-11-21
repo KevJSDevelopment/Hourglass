@@ -1,0 +1,148 @@
+﻿<Window x:Class="ProcessLimitManager.WPF.Views.EditGoalWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="{Binding IsNewGoal, Converter={StaticResource BoolToWindowTitleConverter}}"
+        Height="500" Width="600"
+        WindowStartupLocation="CenterOwner"
+        Background="{StaticResource BackgroundBrush}">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <!-- Goal Title -->
+            <RowDefinition Height="Auto"/>
+            <!-- Add Step Section -->
+            <RowDefinition Height="*"/>
+            <!-- Steps List -->
+            <RowDefinition Height="Auto"/>
+            <!-- Buttons -->
+        </Grid.RowDefinitions>
+
+        <!-- Goal Title Section -->
+        <Grid Margin="0,0,0,20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <TextBlock Text="Goal:"
+                      Foreground="{StaticResource DarkTextBrush}"
+                      FontWeight="SemiBold"
+                      Margin="0,0,0,5"/>
+
+            <TextBox Grid.Row="1"
+                     Text="{Binding GoalText, UpdateSourceTrigger=PropertyChanged}"
+                     Height="50"
+                     TextWrapping="Wrap"
+                     AcceptsReturn="True"
+                     VerticalContentAlignment="Top"
+                     Padding="5"/>
+        </Grid>
+
+        <!-- Add Step Section -->
+        <Grid Grid.Row="1" Margin="0,0,0,10">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <TextBlock Text="Steps:"
+                      Foreground="{StaticResource DarkTextBrush}"
+                      FontWeight="SemiBold"
+                      Margin="0,0,0,5"/>
+
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBox Text="{Binding NewStepText, UpdateSourceTrigger=PropertyChanged}"
+                         Height="30"
+                         Margin="0,0,10,0"
+                         ToolTip="Enter a step to achieve this goal"/>
+
+                <Button Grid.Column="1"
+                        Content="Add Step"
+                        Command="{Binding AddStepCommand}"
+                        Width="80"/>
+            </Grid>
+        </Grid>
+
+        <!-- Steps List -->
+        <Border Grid.Row="2" 
+                BorderBrush="{StaticResource BorderBrush}"
+                BorderThickness="1"
+                Margin="0,0,0,20">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <ItemsControl ItemsSource="{Binding Steps}"
+                            Margin="5">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Margin="0,5">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Text="{Binding Index, StringFormat='{}{0}.'}"
+                                         Foreground="{StaticResource DarkTextBrush}"
+                                         Margin="0,0,10,0"
+                                         VerticalAlignment="Center"/>
+
+                                <TextBlock Grid.Column="1"
+                                         Text="{Binding Text}"
+                                         Foreground="{StaticResource DarkTextBrush}"
+                                         TextWrapping="Wrap"
+                                         VerticalAlignment="Center"/>
+
+                                <StackPanel Grid.Column="2" 
+                                          Orientation="Horizontal"
+                                          Margin="10,0,0,0">
+                                    <Button Content="↑"
+                                            Command="{Binding DataContext.MoveStepUpCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                            CommandParameter="{Binding}"
+                                            Width="30"
+                                            Height="25"
+                                            Margin="0,0,5,0"
+                                            ToolTip="Move Up"/>
+
+                                    <Button Content="↓"
+                                            Command="{Binding DataContext.MoveStepDownCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                            CommandParameter="{Binding}"
+                                            Width="30"
+                                            Height="25"
+                                            Margin="0,0,5,0"
+                                            ToolTip="Move Down"/>
+
+                                    <Button Content="✕"
+                                            Command="{Binding DataContext.RemoveStepCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                            CommandParameter="{Binding}"
+                                            Width="30"
+                                            Height="25"
+                                            ToolTip="Remove Step"/>
+                                </StackPanel>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </Border>
+
+        <!-- Buttons -->
+        <StackPanel Grid.Row="3" 
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right">
+            <Button Content="Save"
+                    Command="{Binding SaveCommand}"
+                    Width="80"
+                    Height="30"
+                    Margin="0,0,10,0"/>
+
+            <Button Content="Cancel"
+                    Command="{Binding CancelCommand}"
+                    Width="80"
+                    Height="30"/>
+        </StackPanel>
+    </Grid>
+</Window>
