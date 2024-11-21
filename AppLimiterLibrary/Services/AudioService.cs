@@ -1,6 +1,7 @@
 using NAudio.Wave;
+using System;
 
-namespace LimiterMessaging.WPF.Services
+namespace AppLimiterLibrary.Services
 {
     public class AudioService : IDisposable
     {
@@ -26,6 +27,7 @@ namespace LimiterMessaging.WPF.Services
                         _audioFile = new AudioFileReader(filePath);
                         _outputDevice.Init(_audioFile);
                     }
+
                     _outputDevice.Play();
                     _isPlaying = true;
                 }
@@ -37,7 +39,8 @@ namespace LimiterMessaging.WPF.Services
             }
             catch (Exception ex)
             {
-                throw new Exception($"Error playing audio: {ex.Message}");
+                CleanupResources();
+                throw new Exception($"Error playing audio: {ex.Message}", ex);
             }
         }
 
@@ -50,6 +53,19 @@ namespace LimiterMessaging.WPF.Services
             }
         }
 
+        public void StopAudio()
+        {
+            if (_outputDevice != null)
+            {
+                _outputDevice.Stop();
+                _isPlaying = false;
+                if (_audioFile != null)
+                {
+                    _audioFile.Position = 0; // Reset position to start
+                }
+            }
+        }
+
         public void SeekToPosition(TimeSpan position)
         {
             if (_audioFile != null)
@@ -58,13 +74,46 @@ namespace LimiterMessaging.WPF.Services
             }
         }
 
+        public double GetCurrentPosition()
+        {
+            return _audioFile?.CurrentTime.TotalSeconds ?? 0;
+        }
+
+        public double GetTotalDuration()
+        {
+            return _audioFile?.TotalTime.TotalSeconds ?? 0;
+        }
+
+        private void CleanupResources()
+        {
+            if (_outputDevice != null)
+            {
+                if (_outputDevice.PlaybackState == PlaybackState.Playing)
+                {
+                    _outputDevice.Stop();
+                }
+                _outputDevice.Dispose();
+                _outputDevice = null;
+            }
+
+            if (_audioFile != null)
+            {
+                _audioFile.Dispose();
+                _audioFile = null;
+            }
+
+            _isPlaying = false;
+        }
+
         public void Dispose()
         {
-            _outputDevice?.Stop();
-            _outputDevice?.Dispose();
-            _outputDevice = null;
-            _audioFile?.Dispose();
-            _audioFile = null;
+            CleanupResources();
+            GC.SuppressFinalize(this);
+        }
+
+        ~AudioService()
+        {
+            CleanupResources();
         }
     }
 }

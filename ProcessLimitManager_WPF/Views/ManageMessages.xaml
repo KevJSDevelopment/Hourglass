@@ -11,128 +11,213 @@
         Background="{StaticResource BackgroundBrush}">
     <Grid Margin="20">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- Add Message Section -->
-        <StackPanel Grid.Row="0" Margin="0,0,0,20">
-            <TextBlock Text="Add New Message"
-                     Foreground="{StaticResource DarkTextBrush}"
-                     FontSize="16"
-                     FontWeight="SemiBold"
-                     Margin="0,0,0,10"/>
+        <TabControl>
+            <!-- Messages List Tab -->
+            <TabItem Header="Messages">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="93*"/>
+                        <ColumnDefinition Width="661*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
 
-            <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                <RadioButton Content="Text Message" 
-                            IsChecked="{Binding IsTextMessageSelected}"
-                            GroupName="MessageType"
-                            Foreground="{StaticResource DarkTextBrush}"
-                            Margin="0,0,15,0"/>
-                <RadioButton Content="Audio Message"
-                            IsChecked="{Binding IsAudioMessageSelected}"
-                            GroupName="MessageType"
-                            Foreground="{StaticResource DarkTextBrush}"
-                            Margin="0,0,15,0"/>
-                <RadioButton Content="Goal Message"
-                            IsChecked="{Binding IsGoalMessageSelected}"
-                            GroupName="MessageType"
-                            Foreground="{StaticResource DarkTextBrush}"/>
-            </StackPanel>
+                    <!-- Messages DataGrid -->
+                    <DataGrid ItemsSource="{Binding Messages}"
+                            SelectedItem="{Binding SelectedMessage}"
+                            AutoGenerateColumns="False"
+                            Background="Transparent"
+                            BorderThickness="1"
+                            BorderBrush="{StaticResource BorderBrush}"
+                            RowHeaderWidth="0"
+                            Margin="0,10,0,10" Grid.ColumnSpan="2">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Type"
+                                              Binding="{Binding TypeDescription}"
+                                              Width="100"/>
+                            <DataGridTextColumn Header="Message/File"
+                                              Binding="{Binding Message}"
+                                              Width="*"/>
+                            <DataGridTemplateColumn Width="Auto">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal">
+                                            <Button Content="Play"
+                                                    Command="{Binding DataContext.PlayAudioCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                    CommandParameter="{Binding}"
+                                                    Visibility="{Binding IsAudio}"
+                                                    Margin="0,0,5,0"
+                                                    Width="60"/>
+                                            <Button Content="Edit"
+                                                    Command="{Binding DataContext.EditMessageCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                    CommandParameter="{Binding}"
+                                                    Visibility="{Binding CanEdit}"
+                                                    Margin="0,0,5,0"
+                                                    Width="60"/>
+                                            <Button Content="Delete"
+                                                    Command="{Binding DataContext.DeleteMessageCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                    CommandParameter="{Binding}"
+                                                    Width="60"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </TabItem>
 
-            <!-- Text/Goal Input (Visible when Text or Goal is selected) -->
-            <Grid Visibility="{Binding ShowTextInput}">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-                <TextBox Grid.Column="0"
-                        Text="{Binding NewMessageText, UpdateSourceTrigger=PropertyChanged}"
-                        Margin="0,0,10,0"
-                        Height="30"/>
-                <Button Grid.Column="1"
-                        Content="Add Message"
-                        Command="{Binding AddMessageCommand}"
-                        Width="100"/>
-            </Grid>
+            <!-- Add Text Message Tab -->
+            <TabItem Header="Add Text">
+                <Grid Margin="0,10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
 
-            <!-- Audio Input (Visible when Audio is selected) -->
-            <Grid Visibility="{Binding ShowAudioInput}">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-                <TextBlock Text="{Binding SelectedAudioFile}"
-                          Foreground="{StaticResource DarkTextBrush}"
-                          VerticalAlignment="Center"/>
-                <Button Grid.Column="1"
-                        Content="Select Audio File"
-                        Command="{Binding SelectAudioFileCommand}"
-                        Width="100"/>
-            </Grid>
-        </StackPanel>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBox Text="{Binding NewMessageText, UpdateSourceTrigger=PropertyChanged}"
+                                ToolTip="Enter a motivational message"
+                                Margin="0,0,10,0"
+                                Height="30"/>
+                        <Button Grid.Column="1"
+                                Content="Add Message"
+                                Command="{Binding AddMessageCommand}"
+                                Width="100"/>
+                    </Grid>
+                </Grid>
+            </TabItem>
 
-        <!-- Messages List -->
-        <Grid Grid.Row="1">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
+            <!-- Add Audio Message Tab -->
+            <TabItem Header="Add Audio">
+                <Grid Margin="0,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="{Binding SelectedAudioFile}"
+                              Foreground="{StaticResource DarkTextBrush}"
+                              VerticalAlignment="Center"/>
+                    <Button Grid.Column="1"
+                            Content="Select Audio File"
+                            Command="{Binding SelectAudioFileCommand}"
+                            Width="100"/>
+                </Grid>
+            </TabItem>
 
-            <!-- List Header -->
-            <TextBlock Text="Messages"
+            <!-- Add Goal Message Tab -->
+            <TabItem Header="Add Goal">
+                <Grid Margin="0,10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <!-- Goal Title -->
+                        <RowDefinition Height="Auto"/>
+                        <!-- Add Step Section -->
+                        <RowDefinition Height="*"/>
+                        <!-- Steps List -->
+                        <RowDefinition Height="Auto"/>
+                        <!-- Add Goal Button -->
+                    </Grid.RowDefinitions>
+
+                    <!-- Goal Title Input -->
+                    <Grid Grid.Row="0" Margin="0,0,0,20">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="Goal:"
                       Foreground="{StaticResource DarkTextBrush}"
-                      FontSize="16"
-                      FontWeight="SemiBold"
+                      Margin="0,0,10,0"
+                      VerticalAlignment="Center"/>
+                        <TextBox Grid.Column="1"
+                     Text="{Binding NewGoalText, UpdateSourceTrigger=PropertyChanged}"
+                     ToolTip="Enter your goal here"
+                     Height="30"/>
+                    </Grid>
+
+                    <!-- Add Step Section -->
+                    <Grid Grid.Row="1" Margin="0,0,0,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBox Text="{Binding NewStepText, UpdateSourceTrigger=PropertyChanged}"
+                     ToolTip="Add a step towards your goal"
+                     Height="30"
+                     Margin="0,0,10,0"/>
+                        <Button Grid.Column="1"
+                    Content="Add Step"
+                    Command="{Binding AddStepCommand}"
+                    Width="80"/>
+                    </Grid>
+
+                    <!-- Steps List -->
+                    <Grid Grid.Row="2">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Text="Steps to achieve this goal:"
+                      Foreground="{StaticResource DarkTextBrush}"
                       Margin="0,0,0,10"/>
 
-            <!-- Messages DataGrid -->
-            <DataGrid Grid.Row="1"
-                      ItemsSource="{Binding Messages}"
-                      SelectedItem="{Binding SelectedMessage}"
-                      AutoGenerateColumns="False"
-                      Background="Transparent"
-                      BorderThickness="1"
-                      BorderBrush="{StaticResource BorderBrush}"
-                      RowHeaderWidth="0">
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="Type"
-                                      Binding="{Binding TypeDescription}"
-                                      Width="100"/>
-                    <DataGridTextColumn Header="Message/File"
-                                      Binding="{Binding Message}"
-                                      Width="*"/>
-                    <DataGridTemplateColumn Width="Auto">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <StackPanel Orientation="Horizontal">
-                                    <Button Content="Play"
-                                            Command="{Binding DataContext.PlayAudioCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                            CommandParameter="{Binding}"
-                                            Visibility="{Binding IsAudio}"
-                                            Margin="0,0,5,0"
-                                            Width="60"/>
-                                    <Button Content="Edit"
-                                            Command="{Binding DataContext.EditMessageCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                            CommandParameter="{Binding}"
-                                            Visibility="{Binding CanEdit}"
-                                            Margin="0,0,5,0"
-                                            Width="60"/>
-                                    <Button Content="Delete"
-                                            Command="{Binding DataContext.DeleteMessageCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                            CommandParameter="{Binding}"
-                                            Width="60"/>
-                                </StackPanel>
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
-                </DataGrid.Columns>
-            </DataGrid>
-        </Grid>
+                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                            <ItemsControl ItemsSource="{Binding CurrentGoalSteps}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="0,0,0,10">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="{Binding Index, StringFormat='{}{0}.'}"
+                                         Foreground="{StaticResource DarkTextBrush}"
+                                         Margin="0,0,10,0"
+                                         VerticalAlignment="Center"/>
+                                            <TextBlock Grid.Column="1"
+                                         Text="{Binding Text}"
+                                         Foreground="{StaticResource DarkTextBrush}"
+                                         TextWrapping="Wrap"
+                                         VerticalAlignment="Center"/>
+                                            <Button Grid.Column="2"
+                                        Content="Remove"
+                                        Command="{Binding DataContext.RemoveStepCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                        CommandParameter="{Binding}"
+                                        Width="60"
+                                        Height="25"
+                                        Margin="10,0,0,0"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </Grid>
+
+                    <!-- Add Goal Button -->
+                    <Button Grid.Row="3"
+                Content="Add Goal"
+                Command="{Binding AddGoalCommand}"
+                HorizontalAlignment="Right"
+                Width="100"
+                Height="30"
+                Margin="0,20,0,0"/>
+                </Grid>
+            </TabItem>
+        </TabControl>
 
         <!-- Bottom Buttons -->
-        <StackPanel Grid.Row="2" 
+        <StackPanel Grid.Row="1" 
                     Orientation="Horizontal" 
                     HorizontalAlignment="Right"
                     Margin="0,20,0,0">
