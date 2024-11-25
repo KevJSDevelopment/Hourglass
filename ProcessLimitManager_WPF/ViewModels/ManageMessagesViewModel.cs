@@ -22,6 +22,8 @@ namespace ProcessLimitManager.WPF.ViewModels
         // Common Properties
         private MotivationalMessage _selectedMessage;
         public ObservableCollection<MotivationalMessage> Messages { get; } = new();
+        public ObservableCollection<MotivationalMessage> AudioMessages { get; } = new();
+        public ObservableCollection<MotivationalMessage> GoalMessages { get; } = new();
 
         // Text Message Properties
         private string _newMessageText = string.Empty;
@@ -104,9 +106,13 @@ namespace ProcessLimitManager.WPF.ViewModels
             {
                 var messages = await _messageRepo.GetMessagesForComputer(_computerId);
                 Messages.Clear();
+                AudioMessages.Clear();
+                GoalMessages.Clear();
                 foreach (var message in messages)
                 {
-                    Messages.Add(message);
+                    if(message.TypeId == 1) Messages.Add(message);
+                    else if(message.TypeId == 2) AudioMessages.Add(message);
+                    else GoalMessages.Add(message);
                 }
             }
             catch (Exception ex)
@@ -169,7 +175,7 @@ namespace ProcessLimitManager.WPF.ViewModels
 
                 if (newAudio != null)
                 {
-                    Messages.Add(newAudio);
+                    AudioMessages.Add(newAudio);
                     SelectedAudioFile = string.Empty;
                 }
             }

@@ -185,6 +185,7 @@ namespace ProcessLimitManager.WPF.ViewModels
 
         private void Save()
         {
+            
             RequestClose?.Invoke(true);
         }
 
