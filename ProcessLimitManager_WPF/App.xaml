@@ -1,6 +1,8 @@
 ﻿<Application x:Class="ProcessLimitManager.WPF.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:converter="clr-namespace:ProcessLimitManager.WPF.Converters"
+             >
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -14,6 +16,9 @@
             <SolidColorBrush x:Key="SecondaryBackgroundBrush" Color="{StaticResource LightSecondaryBackground}"/>
             <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource LightBorderColor}"/>
             <SolidColorBrush x:Key="ForegroundBrush" Color="{StaticResource LightTextColor}"/>
+
+            <converter:BoolToWindowTitleConverter x:Key="BoolToWindowTitleConverter" />
+            <converter:PlayPauseConverter x:Key="PlayPauseConverter" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

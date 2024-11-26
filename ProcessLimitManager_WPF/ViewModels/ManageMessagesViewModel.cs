@@ -18,10 +18,13 @@ namespace ProcessLimitManager.WPF.ViewModels
         private readonly MotivationalMessageRepository _messageRepo;
         private readonly string _computerId;
         private readonly AudioService _audioService;
+        public event Action RequestClose;
 
         // Common Properties
         private MotivationalMessage _selectedMessage;
         public ObservableCollection<MotivationalMessage> Messages { get; } = new();
+        public ObservableCollection<MotivationalMessage> AudioMessages { get; } = new();
+        public ObservableCollection<MotivationalMessage> GoalMessages { get; } = new();
 
         // Text Message Properties
         private string _newMessageText = string.Empty;
@@ -30,8 +33,6 @@ namespace ProcessLimitManager.WPF.ViewModels
         private string _selectedAudioFile = string.Empty;
 
         // Goal Properties
-        private string _newGoalText = string.Empty;
-        private string _newStepText = string.Empty;
         private ObservableCollection<GoalStep> _currentGoalSteps = new();
 
         // Properties
@@ -61,26 +62,6 @@ namespace ProcessLimitManager.WPF.ViewModels
             }
         }
 
-        public string NewGoalText
-        {
-            get => _newGoalText;
-            set
-            {
-                if (SetProperty(ref _newGoalText, value))
-                    CommandManager.InvalidateRequerySuggested();
-            }
-        }
-
-        public string NewStepText
-        {
-            get => _newStepText;
-            set
-            {
-                if (SetProperty(ref _newStepText, value))
-                    CommandManager.InvalidateRequerySuggested();
-            }
-        }
-
         public ObservableCollection<GoalStep> CurrentGoalSteps
         {
             get => _currentGoalSteps;
@@ -91,14 +72,11 @@ namespace ProcessLimitManager.WPF.ViewModels
         public ICommand AddTextMessageCommand { get; }
         public ICommand SelectAudioFileCommand { get; }
         public ICommand AddAudioMessageCommand { get; }
-        public ICommand AddStepCommand { get; }
-        public ICommand RemoveStepCommand { get; }
-        public ICommand AddGoalCommand { get; }
+        public ICommand ShowAddGoalDialogCommand { get; }
         public ICommand EditMessageCommand { get; }
         public ICommand DeleteMessageCommand { get; }
         public ICommand PlayAudioCommand { get; }
-        public ICommand SaveCommand { get; }
-        public ICommand CancelCommand { get; }
+        public ICommand ExitCommand { get; }
 
         // Constructor
         public ManageMessagesViewModel(string computerId)
@@ -111,14 +89,11 @@ namespace ProcessLimitManager.WPF.ViewModels
             AddTextMessageCommand = new AsyncRelayCommand(AddTextMessage, _ => !string.IsNullOrWhiteSpace(NewMessageText));
             SelectAudioFileCommand = new AsyncRelayCommand(SelectAudioFile);
             AddAudioMessageCommand = new AsyncRelayCommand(AddAudioMessage, _ => !string.IsNullOrWhiteSpace(SelectedAudioFile));
-            AddStepCommand = new RelayCommand(AddStep, _ => !string.IsNullOrWhiteSpace(NewStepText));
-            RemoveStepCommand = new RelayCommand(RemoveStep);
-            AddGoalCommand = new AsyncRelayCommand(AddGoal, CanAddGoal);
+            ShowAddGoalDialogCommand = new AsyncRelayCommand(ShowAddGoalDialog);
             EditMessageCommand = new AsyncRelayCommand(EditMessage, _ => SelectedMessage?.TypeId != 2);
             DeleteMessageCommand = new AsyncRelayCommand(DeleteMessage, _ => SelectedMessage != null);
             PlayAudioCommand = new RelayCommand(_ => PlayAudio(), _ => SelectedMessage?.TypeId == 2);
-            SaveCommand = new RelayCommand(_ => Save());
-            CancelCommand = new RelayCommand(_ => Cancel());
+            ExitCommand = new RelayCommand(_ => Exit());
 
             LoadMessages();
         }
@@ -130,9 +105,13 @@ namespace ProcessLimitManager.WPF.ViewModels
             {
                 var messages = await _messageRepo.GetMessagesForComputer(_computerId);
                 Messages.Clear();
+                AudioMessages.Clear();
+                GoalMessages.Clear();
                 foreach (var message in messages)
                 {
-                    Messages.Add(message);
+                    if(message.TypeId == 1) Messages.Add(message);
+                    else if(message.TypeId == 2) AudioMessages.Add(message);
+                    else GoalMessages.Add(message);
                 }
             }
             catch (Exception ex)
@@ -195,7 +174,7 @@ namespace ProcessLimitManager.WPF.ViewModels
 
                 if (newAudio != null)
                 {
-                    Messages.Add(newAudio);
+                    AudioMessages.Add(newAudio);
                     SelectedAudioFile = string.Empty;
                 }
             }
@@ -222,83 +201,10 @@ namespace ProcessLimitManager.WPF.ViewModels
         }
 
         // Goal Methods
-        private void AddStep(object _)
+        private async Task ShowAddGoalDialog(object _)
         {
-            if (string.IsNullOrWhiteSpace(NewStepText)) return;
-
-            CurrentGoalSteps.Add(new GoalStep
-            {
-                Index = CurrentGoalSteps.Count + 1,
-                Text = NewStepText
-            });
-            NewStepText = string.Empty;
-            CommandManager.InvalidateRequerySuggested();
-        }
-
-        private void RemoveStep(object parameter)
-        {
-            if (parameter is GoalStep step)
-            {
-                CurrentGoalSteps.Remove(step);
-                // Update indices
-                for (int i = 0; i < CurrentGoalSteps.Count; i++)
-                {
-                    CurrentGoalSteps[i].Index = i + 1;
-                }
-                CommandManager.InvalidateRequerySuggested();
-            }
-        }
-
-        private bool CanAddGoal(object _)
-        {
-            return !string.IsNullOrWhiteSpace(NewGoalText) && CurrentGoalSteps.Any();
-        }
-
-        private async Task AddGoal(object _)
-        {
-            try
-            {
-                string formattedGoal = FormatGoalWithSteps();
-                int messageId = await _messageRepo.AddGoalMessage(_computerId, formattedGoal);
-
-                if (messageId > 0)
-                {
-                    Messages.Add(new MotivationalMessage
-                    {
-                        Id = messageId,
-                        Message = formattedGoal,
-                        TypeId = 3,
-                        TypeDescription = "Goal"
-                    });
-
-                    // Clear inputs
-                    NewGoalText = string.Empty;
-                    CurrentGoalSteps.Clear();
-                    NewStepText = string.Empty;
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error adding goal: {ex.Message}", "Error",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-        private string FormatGoalWithSteps()
-        {
-            var sb = new StringBuilder();
-            sb.AppendLine($"Goal: {NewGoalText}");
-
-            if (CurrentGoalSteps.Any())
-            {
-                sb.AppendLine("\nSteps to achieve this goal:");
-                foreach (var step in CurrentGoalSteps)
-                {
-                    sb.AppendLine($"{step.Index}. {step.Text}");
-                }
-            }
-
-            return sb.ToString();
+            var editGoalWindow = new EditGoalWindow(_messageRepo, _computerId);
+            editGoalWindow.ShowDialog();
         }
 
         // Common Methods
@@ -352,20 +258,9 @@ namespace ProcessLimitManager.WPF.ViewModels
             }
         }
 
-        private void Save()
+        private void Exit()
         {
-            if (Window.GetWindow(Application.Current.MainWindow) is Window window)
-            {
-                window.DialogResult = true;
-            }
-        }
-
-        private void Cancel()
-        {
-            if (Window.GetWindow(Application.Current.MainWindow) is Window window)
-            {
-                window.DialogResult = false;
-            }
+            RequestClose?.Invoke();
         }
 
         public void Cleanup()

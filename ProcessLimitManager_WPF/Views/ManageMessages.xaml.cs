@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using ProcessLimitManager.WPF.ViewModels;
+using System.Windows;
 
 namespace ProcessLimitManager.WPF.Views
 {
@@ -7,10 +8,16 @@ namespace ProcessLimitManager.WPF.Views
     /// </summary>
     public partial class ManageMessages : Window
     {
+        private readonly ManageMessagesViewModel _viewModel;
+
         public ManageMessages(string computerId)
         {
             InitializeComponent();
-            DataContext = new ViewModels.ManageMessagesViewModel(computerId);
+            _viewModel = new ViewModels.ManageMessagesViewModel(computerId);
+            DataContext = _viewModel;
+
+            // Subscribe to the RequestClose event
+            _viewModel.RequestClose += () => Close();
         }
 
         protected override void OnClosed(EventArgs e)
@@ -19,6 +26,9 @@ namespace ProcessLimitManager.WPF.Views
             if (DataContext is ViewModels.ManageMessagesViewModel viewModel)
             {
                 viewModel.Cleanup();
+
+                // Unsubscribe from the event to prevent memory leaks
+                viewModel.RequestClose -= () => Close();
             }
         }
     }
