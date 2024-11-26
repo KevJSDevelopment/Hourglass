@@ -104,6 +104,80 @@ public class MotivationalMessageRepository
         });
     }
 
+    public async Task<int> AddGoalSteps(int goalMessageId, List<GoalStep> steps)
+    {
+        if (goalMessageId <= 0)
+            return 0;
+
+        var deleteSql = "DELETE FROM GoalStep WHERE GoalMessageId = @GoalMessageId";
+        var insertSql = @"
+        INSERT INTO GoalStep (GoalMessageId, StepText, StepOrder)
+        VALUES (@GoalMessageId, @StepText, @StepOrder)";
+
+        int insertedCount = 0;
+
+        try
+        {
+            using (var connection = DatabaseManager.GetConnection())
+            {
+                await connection.OpenAsync();
+
+                using (var transaction = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        // First delete existing steps
+                        using (var deleteCommand = connection.CreateCommand())
+                        {
+                            deleteCommand.Transaction = transaction;
+                            deleteCommand.CommandText = deleteSql;
+                            deleteCommand.Parameters.AddWithValue("@GoalMessageId", goalMessageId);
+                            await deleteCommand.ExecuteNonQueryAsync();
+                        }
+
+                        // Then insert new steps if there are any
+                        if (steps != null && steps.Any())
+                        {
+                            using (var insertCommand = connection.CreateCommand())
+                            {
+                                insertCommand.Transaction = transaction;
+                                insertCommand.CommandText = insertSql;
+
+                                // Create parameters once
+                                var goalMessageIdParam = insertCommand.Parameters.Add("@GoalMessageId", System.Data.SqlDbType.Int);
+                                var stepTextParam = insertCommand.Parameters.Add("@StepText", System.Data.SqlDbType.NVarChar);
+                                var stepOrderParam = insertCommand.Parameters.Add("@StepOrder", System.Data.SqlDbType.Int);
+
+                                for (int i = 0; i < steps.Count; i++)
+                                {
+                                    // Update parameter values
+                                    goalMessageIdParam.Value = goalMessageId;
+                                    stepTextParam.Value = steps[i].Text;
+                                    stepOrderParam.Value = i + 1; // Use 1-based indexing for order
+
+                                    insertedCount += await insertCommand.ExecuteNonQueryAsync();
+                                }
+                            }
+                        }
+
+                        transaction.Commit();
+                    }
+                    catch (Exception)
+                    {
+                        transaction.Rollback();
+                        throw;
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            throw new Exception("Error updating goal steps", ex);
+        }
+
+        return insertedCount;
+    }
+
     public async Task UpdateMessage(MotivationalMessage message)
     {
         var sql = @"

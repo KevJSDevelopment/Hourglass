@@ -12,9 +12,11 @@ namespace ProcessLimitManager.WPF.ViewModels
         private string _goalText;
         private string _newStepText;
         private readonly MotivationalMessage _originalGoal;
+        private MotivationalMessage _currentGoal;
         private ObservableCollection<GoalStep> _steps;
         private bool _isNewGoal;
-
+        MotivationalMessageRepository _repo;
+        private readonly string _computerId;
         public string GoalText
         {
             get => _goalText;
@@ -59,12 +61,15 @@ namespace ProcessLimitManager.WPF.ViewModels
         public ICommand SaveCommand { get; }
         public ICommand CancelCommand { get; }
 
-        public EditGoalViewModel(MotivationalMessage goal = null)
+        public EditGoalViewModel(MotivationalMessageRepository repo, string computerId, MotivationalMessage goal = null)
         {
-            _originalGoal = goal;
+            _repo = repo;
+            _computerId = computerId;
+            _originalGoal = goal != null ? goal : new MotivationalMessage() { ComputerId = _computerId, TypeDescription = "Goal", TypeId = 3 };
+            _currentGoal = _originalGoal;
             IsNewGoal = goal == null;
             Steps = new ObservableCollection<GoalStep>();
-
+            
             // Initialize commands
             AddStepCommand = new RelayCommand(_ => AddStep(), _ => CanAddStep());
             RemoveStepCommand = new RelayCommand(RemoveStep);
@@ -78,13 +83,13 @@ namespace ProcessLimitManager.WPF.ViewModels
 
         private void InitializeFromGoal()
         {
-            if (_originalGoal != null)
+            if (_originalGoal.Id > 0)
             {
                 var (goal, steps) = ParseGoalMessage(_originalGoal.Message);
                 GoalText = goal;
                 foreach (var step in steps)
                 {
-                    Steps.Add(new GoalStep { Index = Steps.Count + 1, Text = step });
+                    Steps.Add(new GoalStep { StepOrder = Steps.Count + 1, Text = step });
                 }
             }
         }
@@ -117,7 +122,7 @@ namespace ProcessLimitManager.WPF.ViewModels
         {
             Steps.Add(new GoalStep
             {
-                Index = Steps.Count + 1,
+                StepOrder = Steps.Count + 1,
                 Text = NewStepText.Trim()
             });
             NewStepText = string.Empty;
@@ -174,7 +179,7 @@ namespace ProcessLimitManager.WPF.ViewModels
         {
             for (int i = 0; i < Steps.Count; i++)
             {
-                Steps[i].Index = i + 1;
+                Steps[i].StepOrder = i + 1;
             }
         }
 
@@ -183,9 +188,21 @@ namespace ProcessLimitManager.WPF.ViewModels
             return !string.IsNullOrWhiteSpace(GoalText) && Steps.Any();
         }
 
-        private void Save()
+        private async void Save()
         {
-            
+            if(_isNewGoal)
+            {
+                int goalId = await _repo.AddGoalMessage(_computerId, GoalText);
+                await _repo.AddGoalSteps(goalId, [.. Steps]);
+                _currentGoal.Message = GoalText;
+                _currentGoal.Id = goalId;
+            }
+            else
+            {
+                _currentGoal.Message = GoalText;
+                await _repo.UpdateMessage(_currentGoal);
+                await _repo.AddGoalSteps(_currentGoal.Id, [.. Steps]);
+            }
             RequestClose?.Invoke(true);
         }
 
@@ -224,7 +241,7 @@ namespace ProcessLimitManager.WPF.ViewModels
                 sb.AppendLine("\nSteps to achieve this goal:");
                 foreach (var step in Steps)
                 {
-                    sb.AppendLine($"{step.Index}. {step.Text}");
+                    sb.AppendLine($"{step.StepOrder}. {step.Text}");
                 }
             }
 

@@ -14,10 +14,10 @@ namespace ProcessLimitManager.WPF.Views
 
         public MotivationalMessage UpdatedGoal => _viewModel.GetUpdatedGoal();
 
-        public EditGoalWindow(MotivationalMessage goal = null)
+        public EditGoalWindow(MotivationalMessageRepository repo, string computerId, MotivationalMessage goal = null)
         {
             InitializeComponent();
-            _viewModel = new EditGoalViewModel(goal);
+            _viewModel = new EditGoalViewModel(repo, computerId, goal);
             DataContext = _viewModel;
             Owner = Application.Current.MainWindow;
 

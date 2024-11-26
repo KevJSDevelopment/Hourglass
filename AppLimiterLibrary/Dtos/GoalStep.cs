@@ -5,17 +5,31 @@ namespace AppLimiterLibrary.Dtos
 {
     public class GoalStep : INotifyPropertyChanged
     {
-        private int _index;
+        private int _stepId;
+        private int _stepOrder;
         private string _text;
 
-        public int Index
+        public int StepId
         {
-            get => _index;
+            get => _stepId;
             set
             {
-                if (_index != value)
+                if (_stepId != value)
                 {
-                    _index = value;
+                    _stepId = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public int StepOrder
+        {
+            get => _stepOrder;
+            set
+            {
+                if (_stepOrder != value)
+                {
+                    _stepOrder = value;
                     OnPropertyChanged();
                 }
             }

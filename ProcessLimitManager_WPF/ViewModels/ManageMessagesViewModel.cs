@@ -18,6 +18,7 @@ namespace ProcessLimitManager.WPF.ViewModels
         private readonly MotivationalMessageRepository _messageRepo;
         private readonly string _computerId;
         private readonly AudioService _audioService;
+        public event Action RequestClose;
 
         // Common Properties
         private MotivationalMessage _selectedMessage;
@@ -75,8 +76,7 @@ namespace ProcessLimitManager.WPF.ViewModels
         public ICommand EditMessageCommand { get; }
         public ICommand DeleteMessageCommand { get; }
         public ICommand PlayAudioCommand { get; }
-        public ICommand SaveCommand { get; }
-        public ICommand CancelCommand { get; }
+        public ICommand ExitCommand { get; }
 
         // Constructor
         public ManageMessagesViewModel(string computerId)
@@ -93,8 +93,7 @@ namespace ProcessLimitManager.WPF.ViewModels
             EditMessageCommand = new AsyncRelayCommand(EditMessage, _ => SelectedMessage?.TypeId != 2);
             DeleteMessageCommand = new AsyncRelayCommand(DeleteMessage, _ => SelectedMessage != null);
             PlayAudioCommand = new RelayCommand(_ => PlayAudio(), _ => SelectedMessage?.TypeId == 2);
-            SaveCommand = new RelayCommand(_ => Save());
-            CancelCommand = new RelayCommand(_ => Cancel());
+            ExitCommand = new RelayCommand(_ => Exit());
 
             LoadMessages();
         }
@@ -204,7 +203,7 @@ namespace ProcessLimitManager.WPF.ViewModels
         // Goal Methods
         private async Task ShowAddGoalDialog(object _)
         {
-            var editGoalWindow = new EditGoalWindow();
+            var editGoalWindow = new EditGoalWindow(_messageRepo, _computerId);
             editGoalWindow.ShowDialog();
         }
 
@@ -259,20 +258,9 @@ namespace ProcessLimitManager.WPF.ViewModels
             }
         }
 
-        private void Save()
+        private void Exit()
         {
-            if (Window.GetWindow(Application.Current.MainWindow) is Window window)
-            {
-                window.DialogResult = true;
-            }
-        }
-
-        private void Cancel()
-        {
-            if (Window.GetWindow(Application.Current.MainWindow) is Window window)
-            {
-                window.DialogResult = false;
-            }
+            RequestClose?.Invoke();
         }
 
         public void Cleanup()

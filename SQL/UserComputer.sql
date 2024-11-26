@@ -1,0 +1,21 @@
+USE [AppLimiter]
+GO
+
+/****** Object:  Table [dbo].[UserComputers]    Script Date: 11/25/2024 10:51:30 PM ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE [dbo].[UserComputers](
+	[ComputerId] [varchar](50) NOT NULL,
+	[ComputerName] [nvarchar](50) NULL,
+ CONSTRAINT [PK_UserComputers] PRIMARY KEY CLUSTERED 
+(
+	[ComputerId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+
