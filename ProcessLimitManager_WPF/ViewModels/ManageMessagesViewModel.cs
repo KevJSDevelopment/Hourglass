@@ -203,7 +203,7 @@ namespace ProcessLimitManager.WPF.ViewModels
         // Goal Methods
         private async Task ShowAddGoalDialog(object _)
         {
-            var editGoalWindow = new EditGoalWindow(_messageRepo, _computerId);
+            var editGoalWindow = new EditGoalWindow(_messageRepo, _computerId, async () => RefreshMessages());
             editGoalWindow.ShowDialog();
         }
 
@@ -266,6 +266,28 @@ namespace ProcessLimitManager.WPF.ViewModels
         public void Cleanup()
         {
             _audioService?.Dispose();
+        }
+
+        public async Task RefreshMessages()
+        {
+            try
+            {
+                var messages = await _messageRepo.GetMessagesForComputer(_computerId);
+                Messages.Clear();
+                AudioMessages.Clear();
+                GoalMessages.Clear();
+                foreach (var message in messages)
+                {
+                    if (message.TypeId == 1) Messages.Add(message);
+                    else if (message.TypeId == 2) AudioMessages.Add(message);
+                    else GoalMessages.Add(message);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error refreshing messages: {ex.Message}", "Error",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
     }
 }

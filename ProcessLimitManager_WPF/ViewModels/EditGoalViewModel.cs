@@ -17,6 +17,8 @@ namespace ProcessLimitManager.WPF.ViewModels
         private bool _isNewGoal;
         MotivationalMessageRepository _repo;
         private readonly string _computerId;
+        private readonly Action _refreshCallback;
+
         public string GoalText
         {
             get => _goalText;
@@ -61,7 +63,7 @@ namespace ProcessLimitManager.WPF.ViewModels
         public ICommand SaveCommand { get; }
         public ICommand CancelCommand { get; }
 
-        public EditGoalViewModel(MotivationalMessageRepository repo, string computerId, MotivationalMessage goal = null)
+        public EditGoalViewModel(MotivationalMessageRepository repo, string computerId, Action refreshCallback, MotivationalMessage goal = null)
         {
             _repo = repo;
             _computerId = computerId;
@@ -69,7 +71,8 @@ namespace ProcessLimitManager.WPF.ViewModels
             _currentGoal = _originalGoal;
             IsNewGoal = goal == null;
             Steps = new ObservableCollection<GoalStep>();
-            
+            _refreshCallback = refreshCallback;
+
             // Initialize commands
             AddStepCommand = new RelayCommand(_ => AddStep(), _ => CanAddStep());
             RemoveStepCommand = new RelayCommand(RemoveStep);
@@ -203,6 +206,7 @@ namespace ProcessLimitManager.WPF.ViewModels
                 await _repo.UpdateMessage(_currentGoal);
                 await _repo.AddGoalSteps(_currentGoal.Id, [.. Steps]);
             }
+            _refreshCallback?.Invoke();
             RequestClose?.Invoke(true);
         }
 
