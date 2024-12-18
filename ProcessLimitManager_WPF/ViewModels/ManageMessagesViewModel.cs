@@ -9,6 +9,7 @@ using AppLimiterLibrary.Services;
 using Microsoft.Win32;
 using NAudio.Wave;
 using ProcessLimitManager.WPF.Commands;
+using ProcessLimitManager.WPF.Interfaces;
 using ProcessLimitManager.WPF.Views;
 
 namespace ProcessLimitManager.WPF.ViewModels
@@ -212,16 +213,36 @@ namespace ProcessLimitManager.WPF.ViewModels
         {
             if (SelectedMessage == null || SelectedMessage.TypeId == 2) return;
 
-            var dialog = new EditMessageWindow(SelectedMessage.Message);
+            IMessageEditor dialog;
+            if (SelectedMessage.TypeId == 1)
+            {
+                dialog = new EditMessageWindow(SelectedMessage.Message);
+            }
+            else
+            {
+                dialog = new EditGoalWindow(_messageRepo, _computerId, async () => await RefreshMessages(), SelectedMessage);
+            }
+
             if (dialog.ShowDialog() == true)
             {
                 try
                 {
                     SelectedMessage.Message = dialog.UpdatedMessage;
                     await _messageRepo.UpdateMessage(SelectedMessage);
-                    int index = Messages.IndexOf(SelectedMessage);
-                    Messages.RemoveAt(index);
-                    Messages.Insert(index, SelectedMessage);
+
+                    // Update the appropriate collection based on message type
+                    if (SelectedMessage.TypeId == 1)
+                    {
+                        int index = Messages.IndexOf(SelectedMessage);
+                        Messages.RemoveAt(index);
+                        Messages.Insert(index, SelectedMessage);
+                    }
+                    else if (SelectedMessage.TypeId == 3)
+                    {
+                        int index = GoalMessages.IndexOf(SelectedMessage);
+                        GoalMessages.RemoveAt(index);
+                        GoalMessages.Insert(index, SelectedMessage);
+                    }
                 }
                 catch (Exception ex)
                 {
