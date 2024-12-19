@@ -31,5 +31,13 @@ namespace ProcessLimitManager.WPF.Views
                 viewModel.RequestClose -= () => Close();
             }
         }
+
+        public async Task RefreshMessages()
+        {
+            if (DataContext is ManageMessagesViewModel viewModel)
+            {
+                await viewModel.RefreshMessages();
+            }
+        }
     }
 }

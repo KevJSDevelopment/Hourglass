@@ -1,23 +1,23 @@
 ﻿using AppLimiterLibrary.Dtos;
 using ProcessLimitManager.WPF.ViewModels;
 using System.Windows;
-using ProcessLimitManager.WPF.Converters;
+using ProcessLimitManager.WPF.Interfaces;
 
 namespace ProcessLimitManager.WPF.Views
 {
     /// <summary>
     /// Interaction logic for EditGoalWindow.xaml
     /// </summary>
-    public partial class EditGoalWindow : Window
+    public partial class EditGoalWindow : Window, IMessageEditor
     {
         private readonly EditGoalViewModel _viewModel;
 
-        public MotivationalMessage UpdatedGoal => _viewModel.GetUpdatedGoal();
+        public string UpdatedMessage => _viewModel.GetUpdatedGoal()?.Message;
 
-        public EditGoalWindow(MotivationalMessageRepository repo, string computerId, MotivationalMessage goal = null)
+        public EditGoalWindow(MotivationalMessageRepository repo, string computerId, Action refreshCallback, MotivationalMessage goal = null)
         {
             InitializeComponent();
-            _viewModel = new EditGoalViewModel(repo, computerId, goal);
+            _viewModel = new EditGoalViewModel(repo, computerId, refreshCallback, goal);
             DataContext = _viewModel;
             Owner = Application.Current.MainWindow;
 

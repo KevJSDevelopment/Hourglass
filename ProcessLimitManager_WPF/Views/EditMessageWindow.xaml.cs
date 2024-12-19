@@ -1,10 +1,10 @@
-﻿using ProcessLimitManager.WPF.ViewModels;
+﻿using ProcessLimitManager.WPF.Interfaces;
 using ProcessLimitManager.WPF.ViewModels;
 using System.Windows;
 
 namespace ProcessLimitManager.WPF.Views
 {
-    public partial class EditMessageWindow : Window
+    public partial class EditMessageWindow : Window, IMessageEditor
     {
         private readonly EditMessageViewModel _viewModel;
 
