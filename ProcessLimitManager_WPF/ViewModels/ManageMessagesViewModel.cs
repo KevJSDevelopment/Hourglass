@@ -23,6 +23,8 @@ namespace ProcessLimitManager.WPF.ViewModels
 
         // Common Properties
         private MotivationalMessage _selectedMessage;
+        private MotivationalMessage _selectedAudioMessage;
+        private MotivationalMessage _selectedGoalMessage;
         public ObservableCollection<MotivationalMessage> Messages { get; } = new();
         public ObservableCollection<MotivationalMessage> AudioMessages { get; } = new();
         public ObservableCollection<MotivationalMessage> GoalMessages { get; } = new();
@@ -40,7 +42,37 @@ namespace ProcessLimitManager.WPF.ViewModels
         public MotivationalMessage SelectedMessage
         {
             get => _selectedMessage;
-            set => SetProperty(ref _selectedMessage, value);
+            set
+            {
+                if (SetProperty(ref _selectedMessage, value))
+                    CommandManager.InvalidateRequerySuggested();
+            }
+        }
+
+        public MotivationalMessage SelectedAudioMessage
+        {
+            get => _selectedAudioMessage;
+            set
+            {
+                if (SetProperty(ref _selectedAudioMessage, value))
+                {
+                    SelectedMessage = value;  // Update the main selected message
+                    CommandManager.InvalidateRequerySuggested();
+                }
+            }
+        }
+
+        public MotivationalMessage SelectedGoalMessage
+        {
+            get => _selectedGoalMessage;
+            set
+            {
+                if (SetProperty(ref _selectedGoalMessage, value))
+                {
+                    SelectedMessage = value;  // Update the main selected message
+                    CommandManager.InvalidateRequerySuggested();
+                }
+            }
         }
 
         public string NewMessageText
@@ -89,9 +121,9 @@ namespace ProcessLimitManager.WPF.ViewModels
             // Initialize commands
             AddTextMessageCommand = new AsyncRelayCommand(AddTextMessage, _ => !string.IsNullOrWhiteSpace(NewMessageText));
             SelectAudioFileCommand = new AsyncRelayCommand(SelectAudioFile);
-            AddAudioMessageCommand = new AsyncRelayCommand(AddAudioMessage, _ => !string.IsNullOrWhiteSpace(SelectedAudioFile));
+            AddAudioMessageCommand = new AsyncRelayCommand(AddAudioMessage);
             ShowAddGoalDialogCommand = new AsyncRelayCommand(ShowAddGoalDialog);
-            EditMessageCommand = new AsyncRelayCommand(EditMessage, _ => SelectedMessage?.TypeId != 2);
+            EditMessageCommand = new AsyncRelayCommand(EditMessage, _ => SelectedMessage != null);
             DeleteMessageCommand = new AsyncRelayCommand(DeleteMessage, _ => SelectedMessage != null);
             PlayAudioCommand = new RelayCommand(_ => PlayAudio(), _ => SelectedMessage?.TypeId == 2);
             ExitCommand = new RelayCommand(_ => Exit());
@@ -212,42 +244,52 @@ namespace ProcessLimitManager.WPF.ViewModels
         private async Task EditMessage(object _)
         {
             if (SelectedMessage == null || SelectedMessage.TypeId == 2) return;
+            var messageToUpdate = SelectedMessage;
 
             IMessageEditor dialog;
             if (SelectedMessage.TypeId == 1)
             {
+                int index = Messages.IndexOf(SelectedMessage);
                 dialog = new EditMessageWindow(SelectedMessage.Message);
+                if (dialog.ShowDialog() == true)
+                {
+                    try
+                    {
+                        messageToUpdate.Message = dialog.UpdatedMessage;
+                        await _messageRepo.UpdateMessage(SelectedMessage);
+
+                        // Update the appropriate collection based on message type
+                        Messages.RemoveAt(index);
+                        Messages.Insert(index, messageToUpdate);
+
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Error updating message: {ex.Message}", "Error",
+                            MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                }
             }
             else
             {
+                int index = GoalMessages.IndexOf(SelectedMessage);
                 dialog = new EditGoalWindow(_messageRepo, _computerId, async () => await RefreshMessages(), SelectedMessage);
-            }
-
-            if (dialog.ShowDialog() == true)
-            {
-                try
+                if (dialog.ShowDialog() == true)
                 {
-                    SelectedMessage.Message = dialog.UpdatedMessage;
-                    await _messageRepo.UpdateMessage(SelectedMessage);
+                    try
+                    {
+                        messageToUpdate.Message = dialog.UpdatedMessage;
+                        await _messageRepo.UpdateMessage(SelectedMessage);
 
-                    // Update the appropriate collection based on message type
-                    if (SelectedMessage.TypeId == 1)
-                    {
-                        int index = Messages.IndexOf(SelectedMessage);
-                        Messages.RemoveAt(index);
-                        Messages.Insert(index, SelectedMessage);
-                    }
-                    else if (SelectedMessage.TypeId == 3)
-                    {
-                        int index = GoalMessages.IndexOf(SelectedMessage);
+                        // Update the appropriate collection based on message type
                         GoalMessages.RemoveAt(index);
-                        GoalMessages.Insert(index, SelectedMessage);
+                        GoalMessages.Insert(index, messageToUpdate);
                     }
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Error updating message: {ex.Message}", "Error",
-                        MessageBoxButton.OK, MessageBoxImage.Error);
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Error updating message: {ex.Message}", "Error",
+                            MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
                 }
             }
         }
@@ -268,7 +310,20 @@ namespace ProcessLimitManager.WPF.ViewModels
                 {
                     if (await _messageRepo.DeleteMessage(SelectedMessage.Id))
                     {
-                        Messages.Remove(SelectedMessage);
+                        // Remove from the appropriate collection based on type
+                        switch (SelectedMessage.TypeId)
+                        {
+                            case 1:
+                                Messages.Remove(SelectedMessage);
+                                break;
+                            case 2:
+                                AudioMessages.Remove(SelectedMessage);
+                                break;
+                            case 3:
+                                GoalMessages.Remove(SelectedMessage);
+                                break;
+                        }
+                        SelectedMessage = null;
                     }
                 }
                 catch (Exception ex)

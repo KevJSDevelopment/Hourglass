@@ -98,12 +98,13 @@
 
                     <!-- Audio Messages List -->
                     <DataGrid Grid.Row="1"
-                  ItemsSource="{Binding AudioMessages}"
-                  AutoGenerateColumns="False"
-                  IsReadOnly="True"
-                  Background="Transparent"
-                  BorderThickness="1"
-                  BorderBrush="{StaticResource BorderBrush}">
+                        ItemsSource="{Binding AudioMessages}"
+                        SelectedItem="{Binding SelectedAudioMessage}"
+                        AutoGenerateColumns="False"
+                        IsReadOnly="True"
+                        Background="Transparent"
+                        BorderThickness="1"
+                        BorderBrush="{StaticResource BorderBrush}">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="File Name"
                                   Binding="{Binding FileName}"
@@ -156,6 +157,7 @@
                     <!-- Goals List -->
                 <DataGrid Grid.Row="1"
                   ItemsSource="{Binding GoalMessages}"
+                  SelectedItem="{Binding SelectedGoalMessage}"
                   AutoGenerateColumns="False"
                   IsReadOnly="True"
                   Background="Transparent"
@@ -170,7 +172,7 @@
                                     <DataTemplate>
                                         <StackPanel Orientation="Horizontal">
                                             <Button Content="View/Edit"
-                                        Command="{Binding DataContext.EditGoalCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                        Command="{Binding DataContext.EditMessageCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                         CommandParameter="{Binding}"
                                         Width="80"
                                         Margin="0,0,5,0"/>
