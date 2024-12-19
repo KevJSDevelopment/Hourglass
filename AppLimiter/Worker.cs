@@ -27,35 +27,57 @@ namespace AppLimiter
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            await LoadAndApplyLimits(); // Initial load
+            _logger.LogInformation("Worker service started for computer {computerId}", _computerId);
 
-            while (!stoppingToken.IsCancellationRequested)
+            try
             {
-                var startTime = DateTime.UtcNow;
+                await LoadAndApplyLimits(); // Initial load
 
-                await Task.WhenAll(
-                    Task.Run(() => TrackAppUsage()),
-                    EnforceUsageLimits()
-                );
-
-                var executionTime = DateTime.UtcNow - startTime;
-                var delayTime = TimeSpan.FromSeconds(1) - executionTime;
-
-                if (delayTime > TimeSpan.Zero)
+                while (!stoppingToken.IsCancellationRequested)
                 {
-                    await Task.Delay(delayTime, stoppingToken);
-                }
-                else
-                {
-                    _logger.LogWarning($"Execution cycle took longer than 1 second: {executionTime.TotalMilliseconds}ms");
+                    using (_logger.BeginScope(new Dictionary<string, object>
+                    {
+                        ["MonitoringCycle"] = DateTime.UtcNow
+                    }))
+                    {
+                        var startTime = DateTime.UtcNow;
+
+                        await Task.WhenAll(
+                            Task.Run(() => TrackAppUsage()),
+                            EnforceUsageLimits()
+                        );
+
+                        var executionTime = DateTime.UtcNow - startTime;
+
+                        if (executionTime > TimeSpan.FromSeconds(1))
+                        {
+                            _logger.LogWarning("Monitoring cycle took longer than expected: {ExecutionTime}ms",
+                                                        executionTime.TotalMilliseconds);
+                        }
+
+                        var delayTime = TimeSpan.FromSeconds(1) - executionTime;
+
+                        if (delayTime > TimeSpan.Zero)
+                        {
+                            await Task.Delay(delayTime, stoppingToken);
+                        }
+                    }
                 }
             }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Critical error in worker service");
+                throw;
+            }
+
         }
 
         private async Task LoadAndApplyLimits()
         {
             try
             {
+                _logger.LogInformation("Loading application limits");
+
                 var limits = await _appRepo.LoadAllLimits(_computerId);
 
                 _appLimits.Clear();
@@ -63,6 +85,8 @@ namespace AppLimiter
 
                 foreach (var limit in limits)
                 {
+                    _logger.LogDebug("Processing limit for {AppName}: Warning={Warning}, Kill={Kill}, Ignore={Ignore}", limit.Name, limit.WarningTime, limit.KillTime, limit.Ignore);
+
                     if (!limit.Ignore)
                     {
                         if (TimeSpan.TryParse(limit.KillTime, out TimeSpan killTime) && killTime > TimeSpan.Zero)
@@ -78,96 +102,141 @@ namespace AppLimiter
                     string processName = Path.GetFileNameWithoutExtension(limit.Executable);
                     _processToExecutableMap[processName] = limit.Executable;
                 }
-                _logger.LogInformation("Limits updated successfully.");
+
+                _logger.LogInformation("Successfully loaded {Count} application limits", limits.Count);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error loading process limits. Using empty limits.");
+                _logger.LogError(ex, "Error loading process limits");
                 _appLimits.Clear();
             }
         }
 
         private void TrackAppUsage()
         {
-            var processNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            foreach (var process in Process.GetProcesses())
+            try
             {
-                if (processNames.Add(process.ProcessName) && _processToExecutableMap.TryGetValue(process.ProcessName, out string executable))
+                var processNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                var activeProcesses = Process.GetProcesses()
+                    .Where(p => _processToExecutableMap.ContainsKey(p.ProcessName))
+                    .ToList();
+
+                _logger.LogDebug("Tracking usage for {Count} monitored processes", activeProcesses.Count);
+
+                foreach (var process in activeProcesses)
                 {
-                    var matchingLimit = _appLimits.Keys.FirstOrDefault(k => k.Equals(executable, StringComparison.OrdinalIgnoreCase));
-                    if (matchingLimit != null)
+                    if (processNames.Add(process.ProcessName) &&
+                        _processToExecutableMap.TryGetValue(process.ProcessName, out string executable))
                     {
-                        _appUsage.TryAdd(matchingLimit, TimeSpan.Zero);
-                        _appUsage.TryAdd(matchingLimit + "warning", TimeSpan.Zero);
-                        _appUsage[matchingLimit] += TimeSpan.FromSeconds(1);
-                        _appUsage[matchingLimit + "warning"] += TimeSpan.FromSeconds(1);
+                        var matchingLimit = _appLimits.Keys
+                            .FirstOrDefault(k => k.Equals(executable, StringComparison.OrdinalIgnoreCase));
+
+                        if (matchingLimit != null)
+                        {
+                            _appUsage.TryAdd(matchingLimit, TimeSpan.Zero);
+                            _appUsage.TryAdd(matchingLimit + "warning", TimeSpan.Zero);
+                            _appUsage[matchingLimit] += TimeSpan.FromSeconds(1);
+                            _appUsage[matchingLimit + "warning"] += TimeSpan.FromSeconds(1);
+
+                            _logger.LogDebug("Updated usage for {ProcessName}: {Usage}",
+                                process.ProcessName, _appUsage[matchingLimit]);
+                        }
                     }
                 }
             }
-            _logger.LogInformation($"AppUsage updated at {DateTime.Now:HH:mm:ss fff}");
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error tracking app usage");
+            }
         }
 
         private async Task EnforceUsageLimits()
         {
             foreach (var app in _appUsage.Keys.ToList())
             {
-                string baseApp = app.EndsWith("warning") ? app.Substring(0, app.Length - 7) : app; // Remove "warning" suffix
-
-                if (!_ignoreStatusCache.TryGetValue(baseApp, out bool isIgnored))
+                try
                 {
-                    isIgnored = await _appRepo.CheckIgnoreStatus(baseApp);
-                    _ignoreStatusCache[baseApp] = isIgnored;
-                }
+                    string baseApp = app.EndsWith("warning") ? app[..^7] : app;
 
-                if (_appLimits.TryGetValue(app, out TimeSpan limit) && _appUsage[app] >= limit && !_ignoreStatusCache[baseApp])
-                {
-                    if (app.EndsWith("warning"))
+                    if (!_ignoreStatusCache.TryGetValue(baseApp, out bool isIgnored))
                     {
-                        
-                        if (!_shownWarnings.Contains(baseApp))
-                        {
-                            ShowWarningMessage(baseApp);
-                            _shownWarnings.Add(baseApp);
-                        }
+                        isIgnored = await _appRepo.CheckIgnoreStatus(baseApp);
+                        _ignoreStatusCache[baseApp] = isIgnored;
                     }
-                    else
+
+                    if (_appLimits.TryGetValue(app, out TimeSpan limit) &&
+                        _appUsage[app] >= limit &&
+                        !_ignoreStatusCache[baseApp])
                     {
-                        var processName = _processToExecutableMap
-                            .FirstOrDefault(x => x.Value.Equals(app, StringComparison.OrdinalIgnoreCase))
-                            .Key;
-
-                        if (!string.IsNullOrEmpty(processName))
+                        if (app.EndsWith("warning"))
                         {
-                            var processes = Process.GetProcessesByName(processName);
-                            HashSet<string> processedNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-                            foreach (var process in processes)
+                            if (!_shownWarnings.Contains(baseApp))
                             {
-                                if (processedNames.Add(process.ProcessName))
-                                {
-                                    try
-                                    {
-                                        process.Kill();
-                                        _logger.LogInformation($"Terminated {process.ProcessName} due to exceeded usage limit.");
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        _logger.LogError(ex, $"Failed to terminate {process.ProcessName}.");
-                                    }
-                                }
-                            }
+                                _logger.LogInformation(
+                                    "Warning threshold reached for {AppName}. Usage: {Usage}, Limit: {Limit}",
+                                    baseApp, _appUsage[app], limit);
 
-                            // Reset usage and warning status after attempting to kill all instances
-                            _shownWarnings.Remove(app);
-                            _appUsage[app] = TimeSpan.Zero;
-                            _appUsage[app + "warning"] = TimeSpan.Zero;
+                                ShowWarningMessage(baseApp);
+                                _shownWarnings.Add(baseApp);
+                            }
                         }
                         else
                         {
-                            _logger.LogWarning($"No process name found for executable: {app}");
+                            _logger.LogWarning(
+                                "Usage limit exceeded for {AppName}. Usage: {Usage}, Limit: {Limit}. Terminating process.",
+                                baseApp, _appUsage[app], limit);
+
+                            var processName = _processToExecutableMap
+                                .FirstOrDefault(x => x.Value.Equals(baseApp, StringComparison.OrdinalIgnoreCase))
+                                .Key;
+
+                            if (!string.IsNullOrEmpty(processName))
+                            {
+                                await TerminateProcess(processName);
+                            }
                         }
                     }
                 }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error enforcing limits for {AppName}", app);
+                }
+            }
+        }
+
+        private async Task TerminateProcess(string processName)
+        {
+            try
+            {
+                var processes = Process.GetProcessesByName(processName);
+                HashSet<string> processedNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+                foreach (var process in processes)
+                {
+                    if (processedNames.Add(process.ProcessName))
+                    {
+                        try
+                        {
+                            process.Kill();
+                            _logger.LogInformation("Successfully terminated process {ProcessName}", process.ProcessName);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Failed to terminate process {ProcessName}", process.ProcessName);
+                        }
+                    }
+                }
+
+                // Reset usage tracking
+                var executable = _processToExecutableMap[processName];
+                _shownWarnings.Remove(executable);
+                _appUsage[executable] = TimeSpan.Zero;
+                _appUsage[executable + "warning"] = TimeSpan.Zero;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in process termination for {ProcessName}", processName);
+                throw;
             }
         }
 
