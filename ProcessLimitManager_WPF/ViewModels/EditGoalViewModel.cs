@@ -69,6 +69,7 @@ namespace ProcessLimitManager.WPF.ViewModels
             _computerId = computerId;
             _originalGoal = goal != null ? goal : new MotivationalMessage() { ComputerId = _computerId, TypeDescription = "Goal", TypeId = 3 };
             _currentGoal = _originalGoal;
+            GoalText = _currentGoal.Message;
             IsNewGoal = goal == null;
             Steps = new ObservableCollection<GoalStep>();
             _refreshCallback = refreshCallback;
@@ -80,40 +81,6 @@ namespace ProcessLimitManager.WPF.ViewModels
             MoveStepDownCommand = new RelayCommand(MoveStepDown, CanMoveStepDown);
             SaveCommand = new RelayCommand(_ => Save(), _ => CanSave());
             CancelCommand = new RelayCommand(_ => Cancel());
-
-            InitializeFromGoal();
-        }
-
-        private void InitializeFromGoal()
-        {
-            if (_originalGoal.Id > 0)
-            {
-                var (goal, steps) = ParseGoalMessage(_originalGoal.Message);
-                GoalText = goal;
-                foreach (var step in steps)
-                {
-                    Steps.Add(new GoalStep { StepOrder = Steps.Count + 1, Text = step });
-                }
-            }
-        }
-
-        private (string goal, List<string> steps) ParseGoalMessage(string message)
-        {
-            var parts = message.Split(new[] { "\n\nSteps to achieve this goal:\n" },
-                StringSplitOptions.RemoveEmptyEntries);
-
-            string goal = parts[0].Replace("Goal: ", "").Trim();
-            var steps = new List<string>();
-
-            if (parts.Length > 1)
-            {
-                steps = parts[1]
-                    .Split('\n')
-                    .Select(s => s.Substring(s.IndexOf(". ") + 2))
-                    .ToList();
-            }
-
-            return (goal, steps);
         }
 
         private bool CanAddStep()
