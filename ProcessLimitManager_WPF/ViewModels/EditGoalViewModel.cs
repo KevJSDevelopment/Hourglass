@@ -219,11 +219,9 @@ namespace ProcessLimitManager.WPF.ViewModels
         {
             if (!CanSave()) return null;
 
-            var formattedMessage = FormatGoalMessage();
-
             if (_originalGoal != null)
             {
-                _originalGoal.Message = formattedMessage;
+                _originalGoal.Message = GoalText;
                 return _originalGoal;
             }
 
@@ -231,25 +229,8 @@ namespace ProcessLimitManager.WPF.ViewModels
             {
                 TypeId = 3, // Goal type
                 TypeDescription = "Goal",
-                Message = formattedMessage
+                Message = GoalText
             };
-        }
-
-        private string FormatGoalMessage()
-        {
-            var sb = new StringBuilder();
-            sb.AppendLine($"Goal: {GoalText.Trim()}");
-
-            if (Steps.Any())
-            {
-                sb.AppendLine("\nSteps to achieve this goal:");
-                foreach (var step in Steps)
-                {
-                    sb.AppendLine($"{step.StepOrder}. {step.Text}");
-                }
-            }
-
-            return sb.ToString().TrimEnd();
         }
 
         public event Action<bool> RequestClose;
