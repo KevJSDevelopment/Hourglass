@@ -81,6 +81,30 @@ namespace ProcessLimitManager.WPF.ViewModels
             MoveStepDownCommand = new RelayCommand(MoveStepDown, CanMoveStepDown);
             SaveCommand = new RelayCommand(_ => Save(), _ => CanSave());
             CancelCommand = new RelayCommand(_ => Cancel());
+
+            if (!IsNewGoal)
+            {
+                LoadSteps();
+            }
+        }
+
+        private async void LoadSteps()
+        {
+            try
+            {
+                var steps = await _repo.GetGoalSteps(_currentGoal.Id);
+                Steps.Clear();
+                foreach (var step in steps)
+                {
+                    Steps.Add(step);
+                }
+            }
+            catch (Exception ex)
+            {
+                // Handle or log error as needed
+                System.Windows.MessageBox.Show($"Error loading goal steps: {ex.Message}", "Error",
+                    System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            }
         }
 
         private bool CanAddStep()
