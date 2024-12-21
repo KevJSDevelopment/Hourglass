@@ -69,6 +69,7 @@ namespace ProcessLimitManager.WPF.ViewModels
             _computerId = computerId;
             _originalGoal = goal != null ? goal : new MotivationalMessage() { ComputerId = _computerId, TypeDescription = "Goal", TypeId = 3 };
             _currentGoal = _originalGoal;
+            GoalText = _currentGoal.Message;
             IsNewGoal = goal == null;
             Steps = new ObservableCollection<GoalStep>();
             _refreshCallback = refreshCallback;
@@ -81,39 +82,29 @@ namespace ProcessLimitManager.WPF.ViewModels
             SaveCommand = new RelayCommand(_ => Save(), _ => CanSave());
             CancelCommand = new RelayCommand(_ => Cancel());
 
-            InitializeFromGoal();
+            if (!IsNewGoal)
+            {
+                LoadSteps();
+            }
         }
 
-        private void InitializeFromGoal()
+        private async void LoadSteps()
         {
-            if (_originalGoal.Id > 0)
+            try
             {
-                var (goal, steps) = ParseGoalMessage(_originalGoal.Message);
-                GoalText = goal;
+                var steps = await _repo.GetGoalSteps(_currentGoal.Id);
+                Steps.Clear();
                 foreach (var step in steps)
                 {
-                    Steps.Add(new GoalStep { StepOrder = Steps.Count + 1, Text = step });
+                    Steps.Add(step);
                 }
             }
-        }
-
-        private (string goal, List<string> steps) ParseGoalMessage(string message)
-        {
-            var parts = message.Split(new[] { "\n\nSteps to achieve this goal:\n" },
-                StringSplitOptions.RemoveEmptyEntries);
-
-            string goal = parts[0].Replace("Goal: ", "").Trim();
-            var steps = new List<string>();
-
-            if (parts.Length > 1)
+            catch (Exception ex)
             {
-                steps = parts[1]
-                    .Split('\n')
-                    .Select(s => s.Substring(s.IndexOf(". ") + 2))
-                    .ToList();
+                // Handle or log error as needed
+                System.Windows.MessageBox.Show($"Error loading goal steps: {ex.Message}", "Error",
+                    System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             }
-
-            return (goal, steps);
         }
 
         private bool CanAddStep()
@@ -219,11 +210,9 @@ namespace ProcessLimitManager.WPF.ViewModels
         {
             if (!CanSave()) return null;
 
-            var formattedMessage = FormatGoalMessage();
-
             if (_originalGoal != null)
             {
-                _originalGoal.Message = formattedMessage;
+                _originalGoal.Message = GoalText;
                 return _originalGoal;
             }
 
@@ -231,25 +220,8 @@ namespace ProcessLimitManager.WPF.ViewModels
             {
                 TypeId = 3, // Goal type
                 TypeDescription = "Goal",
-                Message = formattedMessage
+                Message = GoalText
             };
-        }
-
-        private string FormatGoalMessage()
-        {
-            var sb = new StringBuilder();
-            sb.AppendLine($"Goal: {GoalText.Trim()}");
-
-            if (Steps.Any())
-            {
-                sb.AppendLine("\nSteps to achieve this goal:");
-                foreach (var step in Steps)
-                {
-                    sb.AppendLine($"{step.StepOrder}. {step.Text}");
-                }
-            }
-
-            return sb.ToString().TrimEnd();
         }
 
         public event Action<bool> RequestClose;

@@ -12,7 +12,7 @@ namespace ProcessLimitManager.WPF.Views
     {
         private readonly EditGoalViewModel _viewModel;
 
-        public string UpdatedMessage => _viewModel.GetUpdatedGoal()?.Message;
+        public string UpdatedMessage => _viewModel.GetUpdatedGoal().Message;
 
         public EditGoalWindow(MotivationalMessageRepository repo, string computerId, Action refreshCallback, MotivationalMessage goal = null)
         {

@@ -103,6 +103,31 @@ public class MotivationalMessageRepository
             command.Parameters.AddWithValue("@GoalMessage", goal);
         });
     }
+    public async Task<List<GoalStep>> GetGoalSteps(int goalMessageId)
+    {
+        var sql = @"SELECT StepId, StepText, StepOrder 
+                   FROM GoalStep 
+                   WHERE GoalMessageId = @GoalMessageId 
+                   ORDER BY StepOrder";
+
+        return await DatabaseManager.ExecuteQueryAsync(sql, reader =>
+        {
+            var steps = new List<GoalStep>();
+            while (reader.Read())
+            {
+                steps.Add(new GoalStep
+                {
+                    Text = reader.GetString(reader.GetOrdinal("StepText")),
+                    StepOrder = reader.GetInt32(reader.GetOrdinal("StepOrder"))
+                });
+            }
+            return steps;
+        },
+        command =>
+        {
+            command.Parameters.AddWithValue("@GoalMessageId", goalMessageId);
+        });
+    }
 
     public async Task<int> AddGoalSteps(int goalMessageId, List<GoalStep> steps)
     {
