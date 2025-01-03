@@ -44,7 +44,7 @@
 
                     <!-- Text Messages List -->
                     <DataGrid Grid.Row="1"
-                  ItemsSource="{Binding TextMessages}"
+                  ItemsSource="{Binding Messages}"
                   AutoGenerateColumns="False"
                   IsReadOnly="True"
                   Background="Transparent"
