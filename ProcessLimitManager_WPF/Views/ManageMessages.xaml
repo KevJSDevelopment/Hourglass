@@ -45,6 +45,7 @@
                     <!-- Text Messages List -->
                     <DataGrid Grid.Row="1"
                   ItemsSource="{Binding Messages}"
+                  SelectedItem="{Binding SelectedMessage}"
                   AutoGenerateColumns="False"
                   IsReadOnly="True"
                   Background="Transparent"
@@ -53,7 +54,8 @@
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Message"
                                   Binding="{Binding Message}"
-                                  Width="*"/>
+                                  Width="*"
+                                  MaxWidth="600"/>
                             <DataGridTemplateColumn Width="Auto">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
