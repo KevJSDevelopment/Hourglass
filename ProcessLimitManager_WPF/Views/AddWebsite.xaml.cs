@@ -12,8 +12,6 @@ namespace ProcessLimitManager.WPF.Views
     public partial class AddWebsite : Window
     {
         private readonly AddWebsiteViewModel _viewModel;
-
-        public string Url => _viewModel.Url;
         public AddWebsite(AppRepository appRepo, string computerId)
         {
             InitializeComponent();

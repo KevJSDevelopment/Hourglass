@@ -87,11 +87,11 @@
                     Command="{Binding AddApplicationCommand}"
                     Margin="5" 
                     Padding="10,5"/>
-            <Button Content="Add Application" 
+            <Button Content="Add Website" 
                     Command="{Binding AddWebsiteCommand}"
                     Margin="5" 
                     Padding="10,5"/>
-            <Button Content="Remove Application" 
+            <Button Content="Remove" 
                     Command="{Binding RemoveApplicationCommand}"
                     Margin="5" 
                     Padding="10,5"/>
