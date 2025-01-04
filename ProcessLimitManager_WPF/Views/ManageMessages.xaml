@@ -8,7 +8,7 @@
         Title="Manage Messages" 
         Height="600" Width="800"
         WindowStartupLocation="CenterScreen"
-        Background="{StaticResource BackgroundBrush}">
+    >
     <Grid Margin="20">
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
@@ -50,7 +50,7 @@
                   IsReadOnly="True"
                   Background="Transparent"
                   BorderThickness="1"
-                  BorderBrush="{StaticResource BorderBrush}">
+                  >
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Message"
                                   Binding="{Binding Message}"
@@ -94,7 +94,7 @@
                     Width="80"
                     Margin="0,0,10,0"/>
                         <TextBlock Text="{Binding SelectedAudioFile}"
-                        Foreground="{StaticResource DarkTextBrush}"
+
                         VerticalAlignment="Center"
                         Width="500"
                         />
@@ -114,7 +114,7 @@
                         IsReadOnly="True"
                         Background="Transparent"
                         BorderThickness="1"
-                        BorderBrush="{StaticResource BorderBrush}">
+                        >
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="File Name"
                                   Binding="{Binding FileName}"
@@ -174,7 +174,7 @@
                   IsReadOnly="True"
                   Background="Transparent"
                   BorderThickness="1"
-                  BorderBrush="{StaticResource BorderBrush}">
+                  >
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Goal"
                                   Binding="{Binding Message}"

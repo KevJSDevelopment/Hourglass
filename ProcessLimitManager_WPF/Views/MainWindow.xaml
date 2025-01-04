@@ -7,8 +7,8 @@
         mc:Ignorable="d"
         Title="Application Limiter Manager" 
         Height="600" Width="800"
-        WindowStartupLocation="CenterScreen"
-        Background="{StaticResource BackgroundBrush}">
+        WindowStartupLocation="CenterScreen">
+
 
     <Window.DataContext>
         <vm:MainViewModel />
@@ -30,7 +30,7 @@
                        VerticalAlignment="Center"
                        HorizontalAlignment="Center"
                        Margin="0,0,0,0"
-                       Foreground="{StaticResource ForegroundBrush}"/>
+                       />
         </StackPanel>
         <!-- DataGrid -->
         <DataGrid Grid.Row="1"
@@ -44,38 +44,18 @@
                 <DataGridTextColumn Header="Application Name" 
                                   Binding="{Binding Name}" 
                                   Width="250">
-                    <DataGridTextColumn.ElementStyle>
-                        <Style TargetType="TextBlock">
-                            <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}"/>
-                        </Style>
-                    </DataGridTextColumn.ElementStyle>
                 </DataGridTextColumn>
                 <DataGridTextColumn Header="Executable" 
                                   Binding="{Binding Executable}" 
                                   Width="200">
-                    <DataGridTextColumn.ElementStyle>
-                        <Style TargetType="TextBlock">
-                            <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}"/>
-                        </Style>
-                    </DataGridTextColumn.ElementStyle>
                 </DataGridTextColumn>
                 <DataGridTextColumn Header="Warning Time" 
                                   Binding="{Binding WarningTime}" 
                                   Width="100">
-                    <DataGridTextColumn.ElementStyle>
-                        <Style TargetType="TextBlock">
-                            <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}"/>
-                        </Style>
-                    </DataGridTextColumn.ElementStyle>
                 </DataGridTextColumn>
                 <DataGridTextColumn Header="Kill Time" 
                                   Binding="{Binding KillTime}" 
                                   Width="100">
-                    <DataGridTextColumn.ElementStyle>
-                        <Style TargetType="TextBlock">
-                            <Setter Property="Foreground" Value="{StaticResource ForegroundBrush}"/>
-                        </Style>
-                    </DataGridTextColumn.ElementStyle>
                 </DataGridTextColumn>
                 <DataGridCheckBoxColumn Header="Ignore Limit" 
                                       Binding="{Binding Ignore}" 

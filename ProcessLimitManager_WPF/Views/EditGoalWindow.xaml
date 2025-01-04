@@ -4,7 +4,7 @@
         Title="{Binding IsNewGoal, Converter={StaticResource BoolToWindowTitleConverter}}"
         Height="500" Width="600"
         WindowStartupLocation="CenterOwner"
-        Background="{StaticResource BackgroundBrush}">
+    >
     <Grid Margin="20">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -25,7 +25,7 @@
             </Grid.RowDefinitions>
 
             <TextBlock Text="Goal:"
-                      Foreground="{StaticResource DarkTextBrush}"
+
                       FontWeight="SemiBold"
                       Margin="0,0,0,5"/>
 
@@ -46,7 +46,7 @@
             </Grid.RowDefinitions>
 
             <TextBlock Text="Steps:"
-                      Foreground="{StaticResource DarkTextBrush}"
+
                       FontWeight="SemiBold"
                       Margin="0,0,0,5"/>
 
@@ -70,7 +70,7 @@
 
         <!-- Steps List -->
         <Border Grid.Row="2" 
-                BorderBrush="{StaticResource BorderBrush}"
+                
                 BorderThickness="1"
                 Margin="0,0,0,20">
             <ScrollViewer VerticalScrollBarVisibility="Auto">
@@ -86,13 +86,13 @@
                                 </Grid.ColumnDefinitions>
 
                                 <TextBlock Text="{Binding Index, StringFormat='{}{0}.'}"
-                                         Foreground="{StaticResource DarkTextBrush}"
+                   
                                          Margin="0,0,10,0"
                                          VerticalAlignment="Center"/>
 
                                 <TextBlock Grid.Column="1"
                                          Text="{Binding Text}"
-                                         Foreground="{StaticResource DarkTextBrush}"
+                   
                                          TextWrapping="Wrap"
                                          VerticalAlignment="Center"/>
 
