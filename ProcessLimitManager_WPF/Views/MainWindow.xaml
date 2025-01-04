@@ -42,24 +42,31 @@
                   Margin="10">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Application Name" 
-                                  Binding="{Binding Name}" 
-                                  Width="250">
+                                    Binding="{Binding Name}" 
+                                    Width="150">
                 </DataGridTextColumn>
-                <DataGridTextColumn Header="Executable" 
-                                  Binding="{Binding Executable}" 
-                                  Width="200">
+                <DataGridTextColumn Header="Path" 
+                                    Binding="{Binding Path}" 
+                                    Width="250">
                 </DataGridTextColumn>
                 <DataGridTextColumn Header="Warning Time" 
-                                  Binding="{Binding WarningTime}" 
-                                  Width="100">
+                                    Binding="{Binding WarningTime}" 
+                                    Width="100">
                 </DataGridTextColumn>
                 <DataGridTextColumn Header="Kill Time" 
-                                  Binding="{Binding KillTime}" 
-                                  Width="100">
+                                    Binding="{Binding KillTime}" 
+                                    Width="100">
                 </DataGridTextColumn>
+                <DataGridCheckBoxColumn Header="IsWebsite" 
+                                        Binding="{Binding IsWebsite}" 
+                                        Width="75"
+                                        IsReadOnly="True"
+                                        />
                 <DataGridCheckBoxColumn Header="Ignore Limit" 
-                                      Binding="{Binding Ignore}" 
-                                      Width="100"/>
+                                        Binding="{Binding Ignore}" 
+                                        Width="75"
+                                        IsReadOnly="True"
+                                        />
             </DataGrid.Columns>
         </DataGrid>
 
@@ -78,6 +85,10 @@
                     Padding="10,5"/>
             <Button Content="Add Application" 
                     Command="{Binding AddApplicationCommand}"
+                    Margin="5" 
+                    Padding="10,5"/>
+            <Button Content="Add Application" 
+                    Command="{Binding AddWebsiteCommand}"
                     Margin="5" 
                     Padding="10,5"/>
             <Button Content="Remove Application" 

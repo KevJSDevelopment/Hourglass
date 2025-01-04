@@ -11,22 +11,23 @@ namespace AppLimiterLibrary.Data
                     INSERT INTO UserComputers (ComputerId, ComputerName)
                     VALUES (@ComputerId, NULL);
 
-                IF EXISTS (SELECT 1 FROM Apps WHERE Executable = @Executable AND ComputerId = @ComputerId)
+                IF EXISTS (SELECT 1 FROM Apps WHERE Path = @Path AND ComputerId = @ComputerId)
                     UPDATE Apps 
                     SET Name = @Name, Ignore = @Ignore, WarningTime = @WarningTime, KillTime = @KillTime 
-                    WHERE Executable = @Executable AND ComputerId = @ComputerId
+                    WHERE Path = @Path AND ComputerId = @ComputerId
                 ELSE
-                    INSERT INTO Apps (Name, Executable, Ignore, WarningTime, KillTime, ComputerId) 
-                    VALUES (@Name, @Executable, @Ignore, @WarningTime, @KillTime, @ComputerId)";
+                    INSERT INTO Apps (Name, Path, Ignore, WarningTime, KillTime, ComputerId, IsWebsite) 
+                    VALUES (@Name, @Path, @Ignore, @WarningTime, @KillTime, @ComputerId, @IsWebsite)";
 
             await DatabaseManager.ExecuteNonQueryAsync(sql, command =>
             {
                 command.Parameters.AddWithValue("@Name", processInfo.Name);
-                command.Parameters.AddWithValue("@Executable", processInfo.Executable);
+                command.Parameters.AddWithValue("@Path", processInfo.Path);
                 command.Parameters.AddWithValue("@Ignore", processInfo.Ignore);
                 command.Parameters.AddWithValue("@WarningTime", processInfo.WarningTime);
                 command.Parameters.AddWithValue("@KillTime", processInfo.KillTime);
                 command.Parameters.AddWithValue("@ComputerId", ComputerIdentifier.GetUniqueIdentifier());
+                command.Parameters.AddWithValue("@IsWebsite", processInfo.IsWebsite);
             });
         }
 
@@ -43,10 +44,11 @@ namespace AppLimiterLibrary.Data
                         Id = reader.GetInt32(reader.GetOrdinal("Id")),
                         ComputerId = reader.GetString(reader.GetOrdinal("ComputerId")),
                         Name = reader.GetString(reader.GetOrdinal("Name")),
-                        Executable = reader.GetString(reader.GetOrdinal("Executable")),
+                        Path = reader.GetString(reader.GetOrdinal("Path")),
                         Ignore = reader.GetBoolean(reader.GetOrdinal("Ignore")),
                         WarningTime = reader.GetString(reader.GetOrdinal("WarningTime")),
-                        KillTime = reader.GetString(reader.GetOrdinal("KillTime"))
+                        KillTime = reader.GetString(reader.GetOrdinal("KillTime")),
+                        IsWebsite = reader.GetBoolean(reader.GetOrdinal("IsWebsite"))
                     });
                 }
                 return results;
@@ -65,9 +67,9 @@ namespace AppLimiterLibrary.Data
             });
         }
 
-        public async Task<bool> CheckIgnoreStatus(string executable)
+        public async Task<bool> CheckIgnoreStatus(string path)
         {
-            var sql = "SELECT CASE WHEN Ignore = 1 THEN 1 ELSE 0 END FROM Apps WHERE Executable = @Executable AND ComputerId = @ComputerId";
+            var sql = "SELECT CASE WHEN Ignore = 1 THEN 1 ELSE 0 END FROM Apps WHERE Path = @Path AND ComputerId = @ComputerId";
 
             return await DatabaseManager.ExecuteQueryAsync(sql, reader =>
             {
@@ -79,17 +81,17 @@ namespace AppLimiterLibrary.Data
             },
             command =>
             {
-                command.Parameters.AddWithValue("@Executable", executable);
+                command.Parameters.AddWithValue("@Path", path);
                 command.Parameters.AddWithValue("@ComputerId", ComputerIdentifier.GetUniqueIdentifier());
             });
         }
 
-        public async Task DeleteApp(string executable)
+        public async Task DeleteApp(string path)
         {
-            var sql = "DELETE FROM Apps WHERE Executable = @Executable AND ComputerId = @ComputerId";
+            var sql = "DELETE FROM Apps WHERE Path = @Path AND ComputerId = @ComputerId";
             await DatabaseManager.ExecuteNonQueryAsync(sql, command =>
             {
-                command.Parameters.AddWithValue("@Executable", executable);
+                command.Parameters.AddWithValue("@Path", path);
                 command.Parameters.AddWithValue("@ComputerId", ComputerIdentifier.GetUniqueIdentifier());
             });
         }

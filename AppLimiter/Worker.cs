@@ -91,16 +91,16 @@ namespace AppLimiter
                     {
                         if (TimeSpan.TryParse(limit.KillTime, out TimeSpan killTime) && killTime > TimeSpan.Zero)
                         {
-                            _appLimits[limit.Executable.ToLower()] = killTime;
+                            _appLimits[limit.Path.ToLower()] = killTime;
                         }
                         if (TimeSpan.TryParse(limit.WarningTime, out TimeSpan warningTime) && warningTime > TimeSpan.Zero)
                         {
-                            _appLimits[limit.Executable.ToLower() + "warning"] = warningTime;
+                            _appLimits[limit.Path.ToLower() + "warning"] = warningTime;
                         }
                     }
 
-                    string processName = Path.GetFileNameWithoutExtension(limit.Executable);
-                    _processToExecutableMap[processName] = limit.Executable;
+                    string processName = Path.GetFileNameWithoutExtension(limit.Path);
+                    _processToExecutableMap[processName] = limit.Path;
                 }
 
                 _logger.LogInformation("Successfully loaded {Count} application limits", limits.Count);

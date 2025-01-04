@@ -21,7 +21,7 @@ namespace ProcessLimitManager.WPF.ViewModels
         public ICommand RemoveApplicationCommand { get; }
         public ICommand OpenSettingsCommand { get; }
         public ICommand ManageMessagesCommand { get; }
-
+        public ICommand AddWebsiteCommand { get; }
         public ObservableCollection<ProcessInfo> Applications
         {
             get => _applications;
@@ -50,6 +50,7 @@ namespace ProcessLimitManager.WPF.ViewModels
             RefreshCommand = new AsyncRelayCommand(_ => LoadApplicationsAsync());
             SetLimitsCommand = new AsyncRelayCommand(SetLimitsAsync, _ => SelectedApplication != null);
             AddApplicationCommand = new AsyncRelayCommand(AddApplicationAsync);
+            AddWebsiteCommand = new AsyncRelayCommand(AddWebsiteAsync);
             RemoveApplicationCommand = new AsyncRelayCommand(RemoveApplicationAsync, _ => SelectedApplication != null);
             OpenSettingsCommand = new RelayCommand(_ => OpenSettings());
             ManageMessagesCommand = new RelayCommand(_ => ManageMessages());
@@ -77,10 +78,11 @@ namespace ProcessLimitManager.WPF.ViewModels
                 var newApp = new ProcessInfo
                 {
                     Name = name,
-                    Executable = dialog.FileName,
+                    Path = dialog.FileName,
                     WarningTime = "00:00:00",
                     KillTime = "00:00:00",
                     ComputerId = _computerId,
+                    IsWebsite = false,
                 };
 
                 await _appRepository.SaveLimits(newApp);
@@ -88,11 +90,19 @@ namespace ProcessLimitManager.WPF.ViewModels
             }
         }
 
+        private async Task AddWebsiteAsync(object _)
+        {
+            var addWebsiteDialog = new AddWebsite(_appRepository, _computerId);
+            if(addWebsiteDialog.ShowDialog() == true)
+            {
+                await LoadApplicationsAsync();
+            }
+        }
         private async Task RemoveApplicationAsync(object _)
         {
             if (SelectedApplication != null)
             {
-                await _appRepository.DeleteApp(SelectedApplication.Executable);
+                await _appRepository.DeleteApp(SelectedApplication.Path);
                 await LoadApplicationsAsync();
             }
         }
