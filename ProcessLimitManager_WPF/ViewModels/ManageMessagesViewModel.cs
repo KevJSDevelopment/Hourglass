@@ -110,6 +110,7 @@ namespace ProcessLimitManager.WPF.ViewModels
         public ICommand EditMessageCommand { get; }
         public ICommand DeleteMessageCommand { get; }
         public ICommand PlayAudioCommand { get; }
+        public ICommand PauseAudioCommand { get; }
         public ICommand ExitCommand { get; }
 
         // Constructor
@@ -127,6 +128,7 @@ namespace ProcessLimitManager.WPF.ViewModels
             EditMessageCommand = new AsyncRelayCommand(EditMessage, _ => SelectedMessage != null);
             DeleteMessageCommand = new AsyncRelayCommand(DeleteMessage, _ => SelectedMessage != null);
             PlayAudioCommand = new RelayCommand(_ => PlayAudio(), _ => SelectedMessage?.TypeId == 2);
+            PauseAudioCommand = new RelayCommand(_ => PauseAudio(), _ => SelectedMessage?.TypeId == 2);
             ExitCommand = new RelayCommand(_ => Exit());
 
             LoadMessages();
@@ -143,8 +145,8 @@ namespace ProcessLimitManager.WPF.ViewModels
                 GoalMessages.Clear();
                 foreach (var message in messages)
                 {
-                    if(message.TypeId == 1) Messages.Add(message);
-                    else if(message.TypeId == 2) AudioMessages.Add(message);
+                    if (message.TypeId == 1) Messages.Add(message);
+                    else if (message.TypeId == 2) AudioMessages.Add(message);
                     else GoalMessages.Add(message);
                 }
             }
@@ -230,6 +232,21 @@ namespace ProcessLimitManager.WPF.ViewModels
             catch (Exception ex)
             {
                 MessageBox.Show($"Error playing audio: {ex.Message}", "Error",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void PauseAudio()
+        {
+            if (SelectedMessage?.TypeId != 2 || string.IsNullOrEmpty(SelectedMessage.FilePath)) return;
+
+            try
+            {
+                _audioService.PauseAudio();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error pausing audio: {ex.Message}", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
