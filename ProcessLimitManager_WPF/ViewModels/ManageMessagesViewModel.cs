@@ -27,6 +27,7 @@ namespace ProcessLimitManager.WPF.ViewModels
         private MotivationalMessage _selectedGoalMessage;
         public ObservableCollection<MotivationalMessage> Messages { get; } = new();
         public ObservableCollection<MotivationalMessage> AudioMessages { get; } = new();
+
         public ObservableCollection<MotivationalMessage> GoalMessages { get; } = new();
 
         // Text Message Properties
