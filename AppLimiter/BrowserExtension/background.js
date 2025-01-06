@@ -13,6 +13,26 @@ function setupWebSocket() {
         // Send initial state
         sendUrlsToService(ws);
     };
+    ws.onmessage = (event) => {
+        try {
+            const message = JSON.parse(event.data);
+            if (message.type === 'closeTab') {
+                console.log('Received close command for domain:', message.domain);
+                chrome.tabs.query({}, (tabs) => {
+                    tabs.forEach(tab => {
+                        if (tab.url) {
+                            const tabDomain = new URL(tab.url).hostname.toLowerCase().replace('www.', '');
+                            if (tabDomain === message.domain.toLowerCase()) {
+                                chrome.tabs.remove(tab.id);
+                            }
+                        }
+                    });
+                });
+            }
+        } catch (error) {
+            console.error('Error processing message:', error);
+        }
+    };
     ws.onclose = () => {
         console.log('Disconnected from App Limiter service');
         connectionActive = false;

@@ -42,9 +42,11 @@ internal class Program
             builder.Logging.AddSerilog();
 
             // Add required services
+            builder.Services.AddSingleton<IWebSocketCommunicator, WebSocketServerService>();
+            builder.Services.AddHostedService(sp => (WebSocketServerService)sp.GetRequiredService<IWebSocketCommunicator>());
             builder.Services.AddSingleton<WebsiteTracker>();
             builder.Services.AddHostedService<Worker>();
-            builder.Services.AddHostedService<WebSocketServerService>();
+
 
             var host = builder.Build();
             DatabaseManager.Initialize(host.Services.GetRequiredService<IConfiguration>());

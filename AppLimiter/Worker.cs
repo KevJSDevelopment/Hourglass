@@ -11,6 +11,7 @@ namespace AppLimiter
         private readonly MotivationalMessageRepository _messageRepo;
         private readonly SettingsRepository _settingsRepository;
         private readonly WebsiteTracker _websiteTracker;
+        private readonly IWebSocketCommunicator _webSocketCommunicator;
         private readonly Dictionary<string, TimeSpan> _appUsage = new Dictionary<string, TimeSpan>();
         private readonly Dictionary<string, TimeSpan> _appLimits = new Dictionary<string, TimeSpan>();
         private readonly Dictionary<string, string> _processToPathMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -21,10 +22,12 @@ namespace AppLimiter
         public Worker(
             ILogger<Worker> logger,
             IConfiguration configuration,
-            WebsiteTracker websiteTracker)
+            WebsiteTracker websiteTracker,
+            IWebSocketCommunicator webSocketCommunicator)
         {
             _logger = logger;
             _websiteTracker = websiteTracker;
+            _webSocketCommunicator = webSocketCommunicator; 
             _appRepo = new AppRepository();
             _messageRepo = new MotivationalMessageRepository();
             _computerId = ComputerIdentifier.GetUniqueIdentifier();
@@ -250,6 +253,8 @@ namespace AppLimiter
                                 {
                                     // Handle website limit exceeded (browser extension will handle blocking)
                                     _logger.LogInformation("Website limit exceeded for {Domain}", baseApp);
+                                    await _webSocketCommunicator.SendCloseTabCommand(GetDomainFromUrl(baseApp));
+
                                 }
                                 else
                                 {

@@ -6,7 +6,7 @@ using System.Text.Json;
 using AppLimiter;
 using AppLimiterLibrary.Dtos;
 
-public class WebSocketServerService : BackgroundService
+public class WebSocketServerService : BackgroundService, IWebSocketCommunicator
 {
     private readonly ILogger<WebSocketServerService> _logger;
     private readonly WebsiteTracker _websiteTracker;
@@ -153,6 +153,28 @@ public class WebSocketServerService : BackgroundService
         catch (JsonException ex)
         {
             _logger.LogError(ex, "Error deserializing message: {Message}", message);
+        }
+    }
+
+    public async Task SendCloseTabCommand(string domain)
+    {
+        var message = JsonSerializer.Serialize(new
+        {
+            type = "closeTab",
+            domain = domain
+        });
+
+        foreach (var client in _connectedClients)
+        {
+            if (client.State == WebSocketState.Open)
+            {
+                var bytes = Encoding.UTF8.GetBytes(message);
+                await client.SendAsync(
+                    new ArraySegment<byte>(bytes),
+                    WebSocketMessageType.Text,
+                    true,
+                    CancellationToken.None);
+            }
         }
     }
 
