@@ -4,21 +4,6 @@
              xmlns:converters="clr-namespace:LimiterMessaging.WPF.Converters">
     <Application.Resources>
         <ResourceDictionary>
-            <!-- Colors 
-            <Color x:Key="PrimaryBackground">#FF171717</Color>
-            <Color x:Key="SecondaryBackground">#FF232323</Color>
-            <Color x:Key="AccentColor">#FFA8C69F</Color>
-            <Color x:Key="TextColor">#FFFFFFFF</Color>
-            -->
-            
-            <!-- Brushes 
-            
-            <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource PrimaryBackground}"/>
-            <SolidColorBrush x:Key="SecondaryBackgroundBrush" Color="{StaticResource SecondaryBackground}"/>
-            <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentColor}"/>
-            <SolidColorBrush x:Key="TextBrush" Color="{StaticResource TextColor}"/>
-            -->
-            
             <!-- Converters -->
             <BooleanToVisibilityConverter x:Key="BoolToVis"/>
             <converters:PlayPauseConverter x:Key="PlayPauseConverter"/>

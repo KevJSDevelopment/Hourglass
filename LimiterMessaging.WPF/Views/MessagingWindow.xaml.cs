@@ -8,13 +8,14 @@ namespace LimiterMessaging.WPF.Views
     public partial class MessagingWindow : Window
     {
         private readonly MessagingViewModel _viewModel;
+        private readonly Action<string, bool> _updateIgnoreStatus;
 
         public MessagingWindow(
             MotivationalMessage message,
             string timerWarning,
             string processName,
             string computerId,
-            Dictionary<string, bool> ignoreStatusCache,
+            Action<string, bool> updateIgnoreStatus,  // New callback
             AppRepository appRepo,
             MotivationalMessageRepository messageRepo,
             SettingsRepository settingsRepo,
@@ -22,12 +23,13 @@ namespace LimiterMessaging.WPF.Views
             )
         {
             InitializeComponent();
+            _updateIgnoreStatus = updateIgnoreStatus;
             _viewModel = new MessagingViewModel(
                 message,
                 timerWarning,
                 processName,
                 computerId,
-                ignoreStatusCache,
+                _updateIgnoreStatus,
                 appRepo,
                 messageRepo,
                 settingsRepo,

@@ -48,8 +48,7 @@
                             <Setter Property="Template">
                                 <Setter.Value>
                                     <ControlTemplate TargetType="Thumb">
-                                        <Ellipse Fill="{StaticResource AccentBrush}"
-                                                Width="12" Height="12"/>
+                                        <Ellipse Width="12" Height="12"/>
                                     </ControlTemplate>
                                 </Setter.Value>
                             </Setter>

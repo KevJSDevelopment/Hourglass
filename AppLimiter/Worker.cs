@@ -1,5 +1,6 @@
 using AppLimiterLibrary.Data;
 using AppLimiterLibrary.Dtos;
+using LimiterMessaging.WPF.Services;
 using System.Diagnostics;
 
 namespace AppLimiter
@@ -17,6 +18,7 @@ namespace AppLimiter
         private readonly Dictionary<string, string> _processToPathMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, bool> _ignoreStatusCache = new Dictionary<string, bool>();
         private readonly HashSet<string> _shownWarnings = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        private readonly WarningWindowManager _warningManager = new();
         private readonly string _computerId;
 
         public Worker(
@@ -317,66 +319,55 @@ namespace AppLimiter
         {
             var timeRemaining = _appLimits[executablePath] - _appLimits[executablePath + "warning"];
             var appName = Uri.IsWellFormedUriString(executablePath, UriKind.Absolute)
-                ? executablePath // Use domain for websites
+                ? executablePath
                 : Path.GetFileNameWithoutExtension(executablePath);
-
-            await _appRepo.UpdateIgnoreStatus(appName, true);
-            _ignoreStatusCache[executablePath] = true;
-
-            string warning = timeRemaining >= TimeSpan.FromMinutes(1)
-                ? $"WARNING: You have been using {appName} for an extended period. The application will close in {timeRemaining.Minutes} minutes once you select OK and usage continues."
-                : $"WARNING: You have been using {appName} for an extended period. The application will close in {timeRemaining.Seconds} seconds once you select OK and usage continues.";
-
-            var messages = await _messageRepo.GetMessagesForComputer(_computerId);
-            Random r = new Random();
-            var message = messages[r.Next(0, messages.Count)];
-            _logger.LogWarning(string.IsNullOrEmpty(message.Message) ? message.FileName : message.Message);
 
             try
             {
-                var tcs = new TaskCompletionSource<bool>();
-                Thread thread = new Thread(() =>
-                {
-                    try
-                    {
-                        var app = new LimiterMessaging.WPF.App();
-                        app.InitializeComponent();
+                await _appRepo.UpdateIgnoreStatus(appName, true);
+                _ignoreStatusCache[executablePath] = true;
 
-                        var window = new LimiterMessaging.WPF.Views.MessagingWindow(
-                            message,
-                            warning,
-                            appName,
-                            _computerId,
-                            _ignoreStatusCache,
-                            _appRepo,
-                            _messageRepo,
-                            _settingsRepository,
-                            null);
+                string warning = timeRemaining >= TimeSpan.FromMinutes(1)
+                    ? $"WARNING: You have been using {appName} for an extended period. The application will close in {timeRemaining.Minutes} minutes once you select OK and usage continues."
+                    : $"WARNING: You have been using {appName} for an extended period. The application will close in {timeRemaining.Seconds} seconds once you select OK and usage continues.";
 
-                        window.Closed += (s, e) =>
-                        {
-                            app.Shutdown();
-                            tcs.SetResult(true);
-                        };
+                var messages = await _messageRepo.GetMessagesForComputer(_computerId);
+                Random r = new Random();
+                var message = messages[r.Next(0, messages.Count)];
 
-                        app.Run(window);
-                    }
-                    catch (Exception ex)
-                    {
-                        tcs.SetException(ex);
-                        _logger.LogError(ex, "Error initializing messaging window");
-                    }
-                });
-
-                thread.SetApartmentState(ApartmentState.STA);
-                thread.Start();
-
-                await tcs.Task;
+                await _warningManager.ShowWarning(
+                    message,
+                    warning,
+                    appName,
+                    _computerId,
+                    UpdateIgnoreStatus,
+                    _appRepo,
+                    _messageRepo,
+                    _settingsRepository,
+                    null);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to show LimiterMessaging window.");
+                _logger.LogError(ex, "Failed to show warning message");
+                // Reset cache on any error
+                _ignoreStatusCache[executablePath] = false;
+                await _appRepo.UpdateIgnoreStatus(appName, false);
             }
+        }
+
+        public void UpdateIgnoreStatus(string processName, bool status)
+        {
+            if (_ignoreStatusCache.ContainsKey(processName))
+            {
+                _ignoreStatusCache[processName] = status;
+                _logger.LogInformation("Updated ignore status for {ProcessName} to {Status}", processName, status);
+            }
+        }
+
+        public override async Task StopAsync(CancellationToken cancellationToken)
+        {
+            _warningManager.Cleanup();
+            await base.StopAsync(cancellationToken);
         }
     }
 }

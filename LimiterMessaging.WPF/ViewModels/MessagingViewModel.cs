@@ -16,7 +16,7 @@ public class MessagingViewModel : ViewModelBase, IDisposable
     private readonly SettingsRepository _settingsRepo;
     private readonly MotivationalMessage _currentMessage;
     private readonly List<MotivationalMessage> _messagesSent;
-    private readonly Dictionary<string, bool> _ignoreStatusCache;
+    private readonly Action<string, bool> _updateIgnoreStatus;
     private readonly string _computerId;
     private readonly string _timerWarning;
     private readonly AudioService _audioService;
@@ -70,7 +70,7 @@ public class MessagingViewModel : ViewModelBase, IDisposable
         string timerWarning,
         string processName,
         string computerId,
-        Dictionary<string, bool> ignoreStatusCache,
+        Action<string, bool> updateIgnoreStatus,
         AppRepository appRepo,
         MotivationalMessageRepository messageRepo,
         SettingsRepository settingsRepo,
@@ -80,7 +80,7 @@ public class MessagingViewModel : ViewModelBase, IDisposable
         _timerWarning = timerWarning;
         _processName = processName;
         _computerId = computerId;
-        _ignoreStatusCache = ignoreStatusCache;
+        _updateIgnoreStatus = updateIgnoreStatus;
         _appRepo = appRepo;
         _messageRepo = messageRepo;
         _settingsRepo = settingsRepo;
@@ -141,8 +141,8 @@ public class MessagingViewModel : ViewModelBase, IDisposable
     {
         try
         {
+            _updateIgnoreStatus(_processName, false);
             await _appRepo.UpdateIgnoreStatus(_processName, false);
-            _ignoreStatusCache[_processName] = false;
             RequestClose?.Invoke();
         }
         catch (Exception ex)
@@ -170,8 +170,7 @@ public class MessagingViewModel : ViewModelBase, IDisposable
                 }
 
                 _messagesSent.Add(message);
-                var newWindow = new MessagingWindow(message, _timerWarning, _processName, _computerId,
-                    _ignoreStatusCache, _appRepo, _messageRepo, _settingsRepo, _messagesSent);
+                var newWindow = new MessagingWindow(message, _timerWarning, _processName, _computerId, _updateIgnoreStatus, _appRepo, _messageRepo, _settingsRepo, _messagesSent);
                 newWindow.ShowDialog();
             }
             RequestClose?.Invoke();
