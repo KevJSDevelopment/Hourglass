@@ -142,7 +142,7 @@ public class MessagingViewModel : ViewModelBase, IDisposable
         try
         {
             await _appRepo.UpdateIgnoreStatus(_processName, false);
-            _ignoreStatusCache.Clear();
+            _ignoreStatusCache[_processName] = false;
             RequestClose?.Invoke();
         }
         catch (Exception ex)
