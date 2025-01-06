@@ -9,13 +9,13 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-
 namespace LimiterMessaging.WPF.Services
 {
     public class WarningWindowManager
     {
         private readonly SemaphoreSlim _semaphore = new(1, 1);
         private Application _app;
+        private bool _isApplicationRunning;
 
         private Application CreateApplication()
         {
@@ -44,39 +44,47 @@ namespace LimiterMessaging.WPF.Services
             await _semaphore.WaitAsync();
             try
             {
-                if (Application.Current == null)
+                if (!_isApplicationRunning)
                 {
+                    var tcs = new TaskCompletionSource<bool>();
+
                     var thread = new Thread(() =>
                     {
-                        _app = CreateApplication();
-
-                        var window = new MessagingWindow(
-                            message,
-                            warning,
-                            processName,
-                            computerId,
-                            updateIgnoreStatus,
-                            appRepo,
-                            messageRepo,
-                            settingsRepo,
-                            messagesSent);
-
-                        window.Closed += (s, e) =>
+                        try
                         {
-                            window.Dispatcher.InvokeShutdown();
-                        };
+                            _app = CreateApplication();
+                            _isApplicationRunning = true;
 
-                        window.Show();
-                        System.Windows.Threading.Dispatcher.Run();
+                            var window = new MessagingWindow(
+                                message,
+                                warning,
+                                processName,
+                                computerId,
+                                updateIgnoreStatus,
+                                appRepo,
+                                messageRepo,
+                                settingsRepo,
+                                messagesSent);
+
+                            window.Closed += (s, e) => tcs.SetResult(true);
+                            window.Show();
+
+                            System.Windows.Threading.Dispatcher.Run();
+                        }
+                        catch (Exception ex)
+                        {
+                            tcs.SetException(ex);
+                        }
                     });
 
                     thread.SetApartmentState(ApartmentState.STA);
                     thread.Start();
-                    thread.Join(); // Wait for window to close
+
+                    await tcs.Task;
                 }
                 else
                 {
-                    await Application.Current.Dispatcher.InvokeAsync(() =>
+                    await _app.Dispatcher.InvokeAsync(() =>
                     {
                         var window = new MessagingWindow(
                             message,
@@ -94,7 +102,6 @@ namespace LimiterMessaging.WPF.Services
             }
             catch (Exception ex)
             {
-                // Reset cache on error
                 updateIgnoreStatus(processName, false);
                 throw;
             }
@@ -110,6 +117,7 @@ namespace LimiterMessaging.WPF.Services
             {
                 _app.Dispatcher.InvokeShutdown();
                 _app = null;
+                _isApplicationRunning = false;
             }
         }
     }
