@@ -10,15 +10,21 @@ namespace AppLimiter
         private readonly AppRepository _appRepo;
         private readonly MotivationalMessageRepository _messageRepo;
         private readonly SettingsRepository _settingsRepository;
+        private readonly WebsiteTracker _websiteTracker;
         private readonly Dictionary<string, TimeSpan> _appUsage = new Dictionary<string, TimeSpan>();
         private readonly Dictionary<string, TimeSpan> _appLimits = new Dictionary<string, TimeSpan>();
-        private readonly Dictionary<string, string> _processToExecutableMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, string> _processToPathMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, bool> _ignoreStatusCache = new Dictionary<string, bool>();
         private readonly HashSet<string> _shownWarnings = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private readonly string _computerId;
-        public Worker(ILogger<Worker> logger, IConfiguration configuration)
+
+        public Worker(
+            ILogger<Worker> logger,
+            IConfiguration configuration,
+            WebsiteTracker websiteTracker)
         {
             _logger = logger;
+            _websiteTracker = websiteTracker;
             _appRepo = new AppRepository();
             _messageRepo = new MotivationalMessageRepository();
             _computerId = ComputerIdentifier.GetUniqueIdentifier();
@@ -44,6 +50,7 @@ namespace AppLimiter
 
                         await Task.WhenAll(
                             Task.Run(() => TrackAppUsage()),
+                            Task.Run(() => TrackWebsiteUsage()),
                             EnforceUsageLimits()
                         );
 
@@ -52,7 +59,7 @@ namespace AppLimiter
                         if (executionTime > TimeSpan.FromSeconds(1))
                         {
                             _logger.LogWarning("Monitoring cycle took longer than expected: {ExecutionTime}ms",
-                                                        executionTime.TotalMilliseconds);
+                                executionTime.TotalMilliseconds);
                         }
 
                         var delayTime = TimeSpan.FromSeconds(1) - executionTime;
@@ -69,45 +76,52 @@ namespace AppLimiter
                 _logger.LogError(ex, "Critical error in worker service");
                 throw;
             }
-
         }
 
         private async Task LoadAndApplyLimits()
         {
             try
             {
-                _logger.LogInformation("Loading application limits");
+                _logger.LogInformation("Loading application and website limits");
 
                 var limits = await _appRepo.LoadAllLimits(_computerId);
 
                 _appLimits.Clear();
-                _processToExecutableMap.Clear();
+                _processToPathMap.Clear();
 
                 foreach (var limit in limits)
                 {
-                    _logger.LogDebug("Processing limit for {AppName}: Warning={Warning}, Kill={Kill}, Ignore={Ignore}", limit.Name, limit.WarningTime, limit.KillTime, limit.Ignore);
+                    _logger.LogDebug("Processing limit for {AppName}: Warning={Warning}, Kill={Kill}, Ignore={Ignore}",
+                        limit.Name, limit.WarningTime, limit.KillTime, limit.Ignore);
 
                     if (!limit.Ignore)
                     {
+                        // Handle both app paths and website URLs
+                        string trackingKey = limit.Path.ToLower();
+
                         if (TimeSpan.TryParse(limit.KillTime, out TimeSpan killTime) && killTime > TimeSpan.Zero)
                         {
-                            _appLimits[limit.Path.ToLower()] = killTime;
+                            _appLimits[trackingKey] = killTime;
                         }
                         if (TimeSpan.TryParse(limit.WarningTime, out TimeSpan warningTime) && warningTime > TimeSpan.Zero)
                         {
-                            _appLimits[limit.Path.ToLower() + "warning"] = warningTime;
+                            _appLimits[trackingKey + "warning"] = warningTime;
                         }
                     }
 
-                    string processName = Path.GetFileNameWithoutExtension(limit.Path);
-                    _processToExecutableMap[processName] = limit.Path;
+                    // For websites, use the domain as the process name
+                    string processName = limit.IsWebsite
+                        ? limit.Path  // For websites, Path should be the domain
+                        : Path.GetFileNameWithoutExtension(limit.Path);
+
+                    _processToPathMap[processName] = limit.Path;
                 }
 
-                _logger.LogInformation("Successfully loaded {Count} application limits", limits.Count);
+                _logger.LogInformation("Successfully loaded {Count} limits", limits.Count);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error loading process limits");
+                _logger.LogError(ex, "Error loading limits");
                 _appLimits.Clear();
             }
         }
@@ -118,7 +132,7 @@ namespace AppLimiter
             {
                 var processNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                 var activeProcesses = Process.GetProcesses()
-                    .Where(p => _processToExecutableMap.ContainsKey(p.ProcessName))
+                    .Where(p => _processToPathMap.ContainsKey(p.ProcessName))
                     .ToList();
 
                 _logger.LogDebug("Tracking usage for {Count} monitored processes", activeProcesses.Count);
@@ -126,27 +140,68 @@ namespace AppLimiter
                 foreach (var process in activeProcesses)
                 {
                     if (processNames.Add(process.ProcessName) &&
-                        _processToExecutableMap.TryGetValue(process.ProcessName, out string executable))
+                        _processToPathMap.TryGetValue(process.ProcessName, out string executable))
                     {
-                        var matchingLimit = _appLimits.Keys
-                            .FirstOrDefault(k => k.Equals(executable, StringComparison.OrdinalIgnoreCase));
-
-                        if (matchingLimit != null)
-                        {
-                            _appUsage.TryAdd(matchingLimit, TimeSpan.Zero);
-                            _appUsage.TryAdd(matchingLimit + "warning", TimeSpan.Zero);
-                            _appUsage[matchingLimit] += TimeSpan.FromSeconds(1);
-                            _appUsage[matchingLimit + "warning"] += TimeSpan.FromSeconds(1);
-
-                            _logger.LogDebug("Updated usage for {ProcessName}: {Usage}",
-                                process.ProcessName, _appUsage[matchingLimit]);
-                        }
+                        UpdateUsageTime(executable);
                     }
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error tracking app usage");
+            }
+        }
+
+        private void TrackWebsiteUsage()
+        {
+            try
+            {
+                var websiteLimits = _processToPathMap
+                    .Where(kvp => Uri.IsWellFormedUriString(kvp.Value, UriKind.Absolute))
+                    .Select(kvp => new {
+                        OriginalUrl = kvp.Value,
+                        Domain = GetDomainFromUrl(kvp.Value)
+                    })
+                    .ToList();
+
+                foreach (var website in websiteLimits)
+                {
+                    if (_websiteTracker.IsDomainActive(website.Domain))
+                    {
+                        UpdateUsageTime(website.OriginalUrl);
+                        _logger.LogDebug("Active website found: {Domain}", website.Domain);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error tracking website usage");
+            }
+        }
+
+        private string GetDomainFromUrl(string url)
+        {
+            if (Uri.TryCreate(url, UriKind.Absolute, out Uri? uri))
+            {
+                return uri.Host.ToLower().Replace("www.", "");
+            }
+            return url.ToLower(); // Return as-is if not a valid URI
+        }
+
+        private void UpdateUsageTime(string key)
+        {
+            var matchingLimit = _appLimits.Keys
+                .FirstOrDefault(k => k.Equals(key, StringComparison.OrdinalIgnoreCase));
+
+            if (matchingLimit != null)
+            {
+                _appUsage.TryAdd(matchingLimit, TimeSpan.Zero);
+                _appUsage.TryAdd(matchingLimit + "warning", TimeSpan.Zero);
+                _appUsage[matchingLimit] += TimeSpan.FromSeconds(1);
+                _appUsage[matchingLimit + "warning"] += TimeSpan.FromSeconds(1);
+
+                _logger.LogDebug("Updated usage for {Key}: {Usage}",
+                    key, _appUsage[matchingLimit]);
             }
         }
 
@@ -182,17 +237,29 @@ namespace AppLimiter
                         }
                         else
                         {
-                            _logger.LogWarning(
-                                "Usage limit exceeded for {AppName}. Usage: {Usage}, Limit: {Limit}. Terminating process.",
-                                baseApp, _appUsage[app], limit);
+                            _logger.LogWarning("Usage limit exceeded for {AppName}. Usage: {Usage}, Limit: {Limit}", baseApp, _appUsage[app], limit);
 
-                            var processName = _processToExecutableMap
+                            var processName = _processToPathMap
                                 .FirstOrDefault(x => x.Value.Equals(baseApp, StringComparison.OrdinalIgnoreCase))
                                 .Key;
 
                             if (!string.IsNullOrEmpty(processName))
                             {
-                                await TerminateProcess(processName);
+                                // Check if it's a website or application
+                                if (Uri.IsWellFormedUriString(baseApp, UriKind.Absolute))
+                                {
+                                    // Handle website limit exceeded (browser extension will handle blocking)
+                                    _logger.LogInformation("Website limit exceeded for {Domain}", baseApp);
+                                }
+                                else
+                                {
+                                    await TerminateProcess(processName);
+                                }
+
+                                // Reset usage tracking
+                                _shownWarnings.Remove(baseApp);
+                                _appUsage[baseApp] = TimeSpan.Zero;
+                                _appUsage[baseApp + "warning"] = TimeSpan.Zero;
                             }
                         }
                     }
@@ -204,6 +271,7 @@ namespace AppLimiter
             }
         }
 
+        // Rest of your existing methods (TerminateProcess, ShowWarningMessage) remain unchanged
         private async Task TerminateProcess(string processName)
         {
             try
@@ -228,7 +296,7 @@ namespace AppLimiter
                 }
 
                 // Reset usage tracking
-                var executable = _processToExecutableMap[processName];
+                var executable = _processToPathMap[processName];
                 _shownWarnings.Remove(executable);
                 _appUsage[executable] = TimeSpan.Zero;
                 _appUsage[executable + "warning"] = TimeSpan.Zero;
@@ -243,7 +311,10 @@ namespace AppLimiter
         private async void ShowWarningMessage(string executablePath)
         {
             var timeRemaining = _appLimits[executablePath] - _appLimits[executablePath + "warning"];
-            var appName = Path.GetFileNameWithoutExtension(executablePath);
+            var appName = Uri.IsWellFormedUriString(executablePath, UriKind.Absolute)
+                ? executablePath // Use domain for websites
+                : Path.GetFileNameWithoutExtension(executablePath);
+
             await _appRepo.UpdateIgnoreStatus(appName, true);
             _ignoreStatusCache[executablePath] = true;
 
@@ -263,10 +334,10 @@ namespace AppLimiter
                 {
                     try
                     {
-                        var app = new LimiterMessaging.WPF.App(); // Use your actual App class instead
+                        var app = new LimiterMessaging.WPF.App();
                         app.InitializeComponent();
 
-                       var window = new LimiterMessaging.WPF.Views.MessagingWindow(
+                        var window = new LimiterMessaging.WPF.Views.MessagingWindow(
                             message,
                             warning,
                             appName,

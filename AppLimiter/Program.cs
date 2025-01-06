@@ -9,12 +9,12 @@ internal class Program
     {
         var builder = Host.CreateApplicationBuilder(args);
 
+        // Configure logging
         var logsPath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             "AppLimiter",
             "Logs"
         );
-
         Directory.CreateDirectory(logsPath);
 
         Log.Logger = new LoggerConfiguration()
@@ -36,15 +36,18 @@ internal class Program
         {
             Log.Information("Starting AppLimiter application");
 
+            // Configure services
             builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
             builder.Logging.ClearProviders();
             builder.Logging.AddSerilog();
 
+            // Add required services
+            builder.Services.AddSingleton<WebsiteTracker>();
             builder.Services.AddHostedService<Worker>();
+            builder.Services.AddHostedService<WebSocketServerService>();
 
             var host = builder.Build();
             DatabaseManager.Initialize(host.Services.GetRequiredService<IConfiguration>());
-
             await host.RunAsync();
         }
         catch (Exception ex)
