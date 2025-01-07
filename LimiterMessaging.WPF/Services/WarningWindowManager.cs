@@ -9,25 +9,47 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
+using System.Windows.Threading;
 namespace LimiterMessaging.WPF.Services
 {
     public class WarningWindowManager
     {
         private readonly SemaphoreSlim _semaphore = new(1, 1);
         private Application _app;
-        private bool _isApplicationRunning;
+        private Thread _uiThread;
+        private TaskCompletionSource<bool> _appReadyTcs;
 
         private Application CreateApplication()
         {
             var app = new Application();
             var resources = new ResourceDictionary();
 
-            // Add required resources
             resources.Add("BoolToVis", new BooleanToVisibilityConverter());
+            resources.Add("AccentColor", (Color)ColorConverter.ConvertFromString("#FFA8C69F"));
+            resources.Add("AccentBrush", new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFA8C69F")));
             resources.Add("PlayPauseConverter", new PlayPauseConverter());
 
             app.Resources = resources;
+            app.ShutdownMode = ShutdownMode.OnExplicitShutdown;  // Important!
             return app;
+        }
+
+        private void EnsureUIThread()
+        {
+            if (_app == null)
+            {
+                _appReadyTcs = new TaskCompletionSource<bool>();
+                _uiThread = new Thread(() =>
+                {
+                    _app = CreateApplication();
+                    _appReadyTcs.SetResult(true);
+                    Dispatcher.Run();
+                });
+                _uiThread.SetApartmentState(ApartmentState.STA);
+                _uiThread.Start();
+                _appReadyTcs.Task.Wait();
+            }
         }
 
         public async Task ShowWarning(
@@ -44,61 +66,28 @@ namespace LimiterMessaging.WPF.Services
             await _semaphore.WaitAsync();
             try
             {
-                if (!_isApplicationRunning)
+                EnsureUIThread();
+
+                var tcs = new TaskCompletionSource<bool>();
+
+                await _app.Dispatcher.InvokeAsync(() =>
                 {
-                    var tcs = new TaskCompletionSource<bool>();
+                    var window = new MessagingWindow(
+                        message,
+                        warning,
+                        processName,
+                        computerId,
+                        updateIgnoreStatus,
+                        appRepo,
+                        messageRepo,
+                        settingsRepo,
+                        messagesSent);
 
-                    var thread = new Thread(() =>
-                    {
-                        try
-                        {
-                            _app = CreateApplication();
-                            _isApplicationRunning = true;
+                    window.Closed += (s, e) => tcs.SetResult(true);
+                    window.Show();
+                });
 
-                            var window = new MessagingWindow(
-                                message,
-                                warning,
-                                processName,
-                                computerId,
-                                updateIgnoreStatus,
-                                appRepo,
-                                messageRepo,
-                                settingsRepo,
-                                messagesSent);
-
-                            window.Closed += (s, e) => tcs.SetResult(true);
-                            window.Show();
-
-                            System.Windows.Threading.Dispatcher.Run();
-                        }
-                        catch (Exception ex)
-                        {
-                            tcs.SetException(ex);
-                        }
-                    });
-
-                    thread.SetApartmentState(ApartmentState.STA);
-                    thread.Start();
-
-                    await tcs.Task;
-                }
-                else
-                {
-                    await _app.Dispatcher.InvokeAsync(() =>
-                    {
-                        var window = new MessagingWindow(
-                            message,
-                            warning,
-                            processName,
-                            computerId,
-                            updateIgnoreStatus,
-                            appRepo,
-                            messageRepo,
-                            settingsRepo,
-                            messagesSent);
-                        window.Show();
-                    });
-                }
+                await tcs.Task;
             }
             catch (Exception ex)
             {
@@ -115,9 +104,12 @@ namespace LimiterMessaging.WPF.Services
         {
             if (_app != null)
             {
-                _app.Dispatcher.InvokeShutdown();
+                _app.Dispatcher.InvokeAsync(() =>
+                {
+                    _app.Shutdown();
+                });
                 _app = null;
-                _isApplicationRunning = false;
+                _uiThread = null;
             }
         }
     }
