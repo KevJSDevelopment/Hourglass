@@ -1,10 +1,10 @@
-﻿using AppLimiterLibrary.Data;
-using ProcessLimitManager.WPF.ViewModels;
+﻿using HourglassLibrary.Data;
+using HourglassManager.WPF.ViewModels;
 using System.Security.Policy;
 using System.Windows;
 
 
-namespace ProcessLimitManager.WPF.Views
+namespace HourglassManager.WPF.Views
 {
     /// <summary>
     /// Interaction logic for AddWebsite.xaml

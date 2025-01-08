@@ -1,7 +1,7 @@
-﻿using ProcessLimitManager.WPF.ViewModels;
+﻿using HourglassManager.WPF.ViewModels;
 using System.Windows;
 
-namespace ProcessLimitManager.WPF.Views
+namespace HourglassManager.WPF.Views
 {
     /// <summary>
     /// Interaction logic for ManageMessages.xaml

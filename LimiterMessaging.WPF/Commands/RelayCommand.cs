@@ -1,6 +1,6 @@
 ﻿using System.Windows.Input;
 
-namespace LimiterMessaging.WPF.Commands
+namespace HourglassMessaging.WPF.Commands
 {
     public class RelayCommand : ICommand
     {

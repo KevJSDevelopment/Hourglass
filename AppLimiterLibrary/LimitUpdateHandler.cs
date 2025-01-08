@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace AppLimiterLibrary
+namespace HourglassLibrary
 {
     public static class LimitUpdateHandler
     {

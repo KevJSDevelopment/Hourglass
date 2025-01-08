@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Data;
 
-namespace ProcessLimitManager.WPF.Converters
+namespace HourglassManager.WPF.Converters
 {
     public class PlayPauseConverter : IValueConverter
     {

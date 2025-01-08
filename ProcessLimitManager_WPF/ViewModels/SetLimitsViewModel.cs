@@ -1,9 +1,9 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
-using AppLimiterLibrary.Dtos;
-using ProcessLimitManager.WPF.Commands;
+using HourglassLibrary.Dtos;
+using HourglassManager.WPF.Commands;
 
-namespace ProcessLimitManager.WPF.ViewModels
+namespace HourglassManager.WPF.ViewModels
 {
     public class SetLimitsViewModel : ViewModelBase
     {

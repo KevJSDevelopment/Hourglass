@@ -3,8 +3,8 @@ using System.Net.WebSockets;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
-using AppLimiter;
-using AppLimiterLibrary.Dtos;
+using Hourglass;
+using HourglassLibrary.Dtos;
 
 public class WebSocketServerService : BackgroundService, IWebSocketCommunicator
 {

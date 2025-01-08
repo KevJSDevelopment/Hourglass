@@ -20,8 +20,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AppLimiterLibrary\AppLimiterLibrary.csproj" />
-    <ProjectReference Include="..\LimiterMessaging.WPF\LimiterMessaging.WPF.csproj" />
+    <ProjectReference Include="..\AppLimiterLibrary\HourglassLibrary.csproj" />
+    <ProjectReference Include="..\LimiterMessaging.WPF\HourglassMessaging.WPF.csproj" />
   </ItemGroup>
 
   <ItemGroup>

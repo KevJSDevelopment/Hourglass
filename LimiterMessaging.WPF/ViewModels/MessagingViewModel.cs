@@ -1,12 +1,12 @@
-using AppLimiterLibrary.Data;
-using AppLimiterLibrary.Dtos;
-using LimiterMessaging.WPF.Views;
+using HourglassLibrary.Data;
+using HourglassLibrary.Dtos;
+using HourglassMessaging.WPF.Views;
 using System.Windows.Input;
 using System.Windows;
-using LimiterMessaging.WPF.ViewModels;
-using LimiterMessaging.WPF.Commands;
+using HourglassMessaging.WPF.ViewModels;
+using HourglassMessaging.WPF.Commands;
 using System.Windows.Threading;
-using AppLimiterLibrary.Services;
+using HourglassLibrary.Services;
 
 public class MessagingViewModel : ViewModelBase, IDisposable
 {

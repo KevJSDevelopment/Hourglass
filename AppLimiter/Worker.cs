@@ -1,9 +1,9 @@
-using AppLimiterLibrary.Data;
-using AppLimiterLibrary.Dtos;
-using LimiterMessaging.WPF.Services;
+using HourglassLibrary.Data;
+using HourglassLibrary.Dtos;
+using HourglassMessaging.WPF.Services;
 using System.Diagnostics;
 
-namespace AppLimiter
+namespace Hourglass
 {
     public class Worker : BackgroundService
     {

@@ -1,6 +1,6 @@
 ﻿using System.Windows;
 
-namespace ProcessLimitManager.WPF.Views
+namespace HourglassManager.WPF.Views
 {
     public partial class MainWindow : Window
     {

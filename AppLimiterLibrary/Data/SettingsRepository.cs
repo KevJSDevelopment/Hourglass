@@ -1,11 +1,12 @@
-﻿using AppLimiterLibrary.Dtos;
+﻿using HourglassLibrary.Dtos;
+using HourglassLibrary.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AppLimiterLibrary.Data
+namespace HourglassLibrary.Data
 {
     public class SettingsRepository
     {

@@ -1,8 +1,8 @@
 using System.Windows.Input;
-using ProcessLimitManager.WPF.ViewModels;
-using ProcessLimitManager.WPF.Commands;
+using HourglassManager.WPF.ViewModels;
+using HourglassManager.WPF.Commands;
 
-namespace ProcessLimitManager.WPF.ViewModels
+namespace HourglassManager.WPF.ViewModels
 {
     public class EditMessageViewModel : ViewModelBase
     {

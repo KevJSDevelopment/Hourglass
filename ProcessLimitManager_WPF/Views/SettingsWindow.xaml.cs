@@ -1,8 +1,8 @@
-﻿using ProcessLimitManager.WPF.ViewModels;
+﻿using HourglassManager.WPF.ViewModels;
 using System.ComponentModel;
 using System.Windows;
 
-namespace ProcessLimitManager.WPF.Views
+namespace HourglassManager.WPF.Views
 {
     public partial class SettingsWindow : Window
     {

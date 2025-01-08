@@ -1,7 +1,7 @@
-﻿using AppLimiterLibrary.Data;
-using AppLimiterLibrary.Dtos;
-using LimiterMessaging.WPF.Converters;
-using LimiterMessaging.WPF.Views;
+﻿using HourglassLibrary.Data;
+using HourglassLibrary.Dtos;
+using HourglassMessaging.WPF.Converters;
+using HourglassMessaging.WPF.Views;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,7 +11,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Threading;
-namespace LimiterMessaging.WPF.Services
+namespace HourglassMessaging.WPF.Services
 {
     public class WarningWindowManager
     {

@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AppLimiterLibrary\AppLimiterLibrary.csproj" />
+    <ProjectReference Include="..\AppLimiterLibrary\HourglassLibrary.csproj" />
   </ItemGroup>
 
 </Project>

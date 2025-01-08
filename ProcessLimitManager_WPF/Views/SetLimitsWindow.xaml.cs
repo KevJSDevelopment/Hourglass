@@ -1,8 +1,8 @@
-﻿using AppLimiterLibrary.Dtos;
-using ProcessLimitManager.WPF.ViewModels;
+﻿using HourglassLibrary.Dtos;
+using HourglassManager.WPF.ViewModels;
 using System.Windows;
 
-namespace ProcessLimitManager.WPF.Views
+namespace HourglassManager.WPF.Views
 {
     public partial class SetLimitsWindow : Window
     {

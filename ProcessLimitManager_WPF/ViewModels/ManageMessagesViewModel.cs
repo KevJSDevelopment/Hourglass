@@ -3,16 +3,16 @@ using System.IO;
 using System.Text;
 using System.Windows;
 using System.Windows.Input;
-using AppLimiterLibrary.Data;
-using AppLimiterLibrary.Dtos;
-using AppLimiterLibrary.Services;
+using HourglassLibrary.Data;
+using HourglassLibrary.Dtos;
+using HourglassLibrary.Services;
 using Microsoft.Win32;
 using NAudio.Wave;
-using ProcessLimitManager.WPF.Commands;
-using ProcessLimitManager.WPF.Interfaces;
-using ProcessLimitManager.WPF.Views;
+using HourglassManager.WPF.Commands;
+using HourglassManager.WPF.Interfaces;
+using HourglassManager.WPF.Views;
 
-namespace ProcessLimitManager.WPF.ViewModels
+namespace HourglassManager.WPF.ViewModels
 {
     public class ManageMessagesViewModel : ViewModelBase
     {

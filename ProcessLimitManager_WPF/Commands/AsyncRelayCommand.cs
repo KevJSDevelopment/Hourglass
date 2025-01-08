@@ -1,6 +1,6 @@
 ﻿using System.Windows.Input;
 
-namespace ProcessLimitManager.WPF.Commands
+namespace HourglassManager.WPF.Commands
 {
     public class AsyncRelayCommand : ICommand
     {

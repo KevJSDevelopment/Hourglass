@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace AppLimiterLibrary.Dtos
+namespace HourglassLibrary.Dtos
 {
     public class GoalStep : INotifyPropertyChanged
     {

@@ -1,5 +1,5 @@
-using AppLimiter;
-using AppLimiterLibrary.Data;
+using Hourglass;
+using HourglassLibrary.Data;
 using Serilog;
 using Serilog.Events;
 

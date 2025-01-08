@@ -1,4 +1,4 @@
-﻿namespace ProcessLimitManager.WPF.Interfaces
+﻿namespace HourglassManager.WPF.Interfaces
 {
     public interface IMessageEditor
     {

@@ -1,11 +1,11 @@
-﻿using AppLimiterLibrary.Dtos;
-using ProcessLimitManager.WPF.Commands;
+﻿using HourglassLibrary.Dtos;
+using HourglassManager.WPF.Commands;
 using System.Collections.ObjectModel;
 using System.Text;
 using System.Windows.Input;
 
 
-namespace ProcessLimitManager.WPF.ViewModels
+namespace HourglassManager.WPF.ViewModels
 {
     public class EditGoalViewModel : ViewModelBase
     {

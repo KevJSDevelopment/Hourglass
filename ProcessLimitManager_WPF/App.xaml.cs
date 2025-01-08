@@ -1,10 +1,10 @@
 ﻿using System.Windows;
-using AppLimiterLibrary.Data;
+using HourglassLibrary.Data;
 using Microsoft.Extensions.Configuration;
 using System.IO;
-using ProcessLimitManager.WPF.Views;
+using HourglassManager.WPF.Views;
 
-namespace ProcessLimitManager.WPF
+namespace HourglassManager.WPF
 {
     public partial class App : Application
     {

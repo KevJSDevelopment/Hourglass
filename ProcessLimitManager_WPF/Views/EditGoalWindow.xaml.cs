@@ -1,9 +1,9 @@
-﻿using AppLimiterLibrary.Dtos;
-using ProcessLimitManager.WPF.ViewModels;
+﻿using HourglassLibrary.Dtos;
+using HourglassManager.WPF.ViewModels;
 using System.Windows;
-using ProcessLimitManager.WPF.Interfaces;
+using HourglassManager.WPF.Interfaces;
 
-namespace ProcessLimitManager.WPF.Views
+namespace HourglassManager.WPF.Views
 {
     /// <summary>
     /// Interaction logic for EditGoalWindow.xaml

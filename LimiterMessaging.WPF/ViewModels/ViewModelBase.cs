@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace LimiterMessaging.WPF.ViewModels
+namespace HourglassMessaging.WPF.ViewModels
 {
     public class ViewModelBase : INotifyPropertyChanged
     {

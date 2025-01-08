@@ -2,7 +2,7 @@
 using Microsoft.Data.SqlClient; // Use Microsoft.Data.SqlClient for .NET Core 3.x or later
 using Microsoft.Extensions.Configuration;
 
-namespace AppLimiterLibrary.Data
+namespace HourglassLibrary.Data
 {
     public class DatabaseManager
     {

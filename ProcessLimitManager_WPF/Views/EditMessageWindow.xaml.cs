@@ -1,8 +1,8 @@
-﻿using ProcessLimitManager.WPF.Interfaces;
-using ProcessLimitManager.WPF.ViewModels;
+﻿using HourglassManager.WPF.Interfaces;
+using HourglassManager.WPF.ViewModels;
 using System.Windows;
 
-namespace ProcessLimitManager.WPF.Views
+namespace HourglassManager.WPF.Views
 {
     public partial class EditMessageWindow : Window, IMessageEditor
     {

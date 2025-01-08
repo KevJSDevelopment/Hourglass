@@ -1,7 +1,7 @@
 using NAudio.Wave;
 using System;
 
-namespace AppLimiterLibrary.Services
+namespace HourglassLibrary.Services
 {
     public class AudioService : IDisposable
     {

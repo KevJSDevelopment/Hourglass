@@ -1,13 +1,13 @@
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Windows.Input;
-using AppLimiterLibrary.Data;
-using AppLimiterLibrary.Dtos;
+using HourglassLibrary.Data;
+using HourglassLibrary.Dtos;
 using Microsoft.Win32;
-using ProcessLimitManager.WPF.Views;
-using ProcessLimitManager.WPF.Commands;
+using HourglassManager.WPF.Views;
+using HourglassManager.WPF.Commands;
 
-namespace ProcessLimitManager.WPF.ViewModels
+namespace HourglassManager.WPF.ViewModels
 {
     public class MainViewModel : ViewModelBase
     {

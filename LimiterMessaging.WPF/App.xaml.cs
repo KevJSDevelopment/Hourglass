@@ -1,8 +1,8 @@
 ﻿using System.Windows;
-using AppLimiterLibrary.Data;
-using AppLimiterLibrary.Dtos;
+using HourglassLibrary.Data;
+using HourglassLibrary.Dtos;
 
-namespace LimiterMessaging.WPF
+namespace HourglassMessaging.WPF
 {
     public partial class App : Application
     {

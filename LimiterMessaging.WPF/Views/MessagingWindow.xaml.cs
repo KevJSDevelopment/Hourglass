@@ -1,9 +1,9 @@
 ﻿using System.Windows;
-using AppLimiterLibrary.Data;
-using AppLimiterLibrary.Dtos;
-using LimiterMessaging.WPF.ViewModels;
+using HourglassLibrary.Data;
+using HourglassLibrary.Dtos;
+using HourglassMessaging.WPF.ViewModels;
 
-namespace LimiterMessaging.WPF.Views
+namespace HourglassMessaging.WPF.Views
 {
     public partial class MessagingWindow : Window
     {

@@ -1,6 +1,6 @@
-﻿using AppLimiterLibrary.Dtos;
+﻿using HourglassLibrary.Dtos;
 
-namespace AppLimiterLibrary.Data
+namespace HourglassLibrary.Data
 {
     public class AppRepository
     {
