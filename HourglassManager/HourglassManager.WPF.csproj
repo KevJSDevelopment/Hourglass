@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AppLimiterLibrary\HourglassLibrary.csproj" />
+    <ProjectReference Include="..\HourglassLibrary\HourglassLibrary.csproj" />
   </ItemGroup>
 
   <ItemGroup>

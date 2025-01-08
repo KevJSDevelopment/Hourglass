@@ -3,15 +3,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.10.35122.118
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hourglass.Service", "AppLimiter\Hourglass.Service.csproj", "{D96A7E0D-C131-4DF0-8466-CD17567A6F52}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hourglass.Service", "Hourglass\Hourglass.Service.csproj", "{D96A7E0D-C131-4DF0-8466-CD17567A6F52}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HourglassLibrary", "AppLimiterLibrary\HourglassLibrary.csproj", "{CB81D97E-85E9-40D6-AA51-95747FDF79EF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HourglassLibrary", "HourglassLibrary\HourglassLibrary.csproj", "{CB81D97E-85E9-40D6-AA51-95747FDF79EF}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HourglassManager.WPF", "ProcessLimitManager_WPF\HourglassManager.WPF.csproj", "{51186B8C-EA79-4BF5-8B06-275F15629E25}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HourglassManager.WPF", "HourglassManager\HourglassManager.WPF.csproj", "{51186B8C-EA79-4BF5-8B06-275F15629E25}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HourglassMessaging.WPF", "LimiterMessaging.WPF\HourglassMessaging.WPF.csproj", "{8DFFFCD1-741F-4050-B767-B9E4E94C9AA9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HourglassMessaging.WPF", "HourglassMessaging\HourglassMessaging.WPF.csproj", "{8DFFFCD1-741F-4050-B767-B9E4E94C9AA9}"
 EndProject
-Project("{C7167F0D-BC9F-4E6E-AFE1-012C56B48DB5}") = "Hourglass.Manager.Package", "Hourglass.Manager.Package\Hourglass.Manager.Package.wapproj", "{C7710F30-75B2-4074-8D68-FD1FBC269361}"
+Project("{C7167F0D-BC9F-4E6E-AFE1-012C56B48DB5}") = "Hourglass.Manager.Package", "HourglassManager.Package\Hourglass.Manager.Package.wapproj", "{C7710F30-75B2-4074-8D68-FD1FBC269361}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
