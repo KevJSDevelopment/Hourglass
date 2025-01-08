@@ -318,18 +318,15 @@ namespace AppLimiter
         private async void ShowWarningMessage(string executablePath)
         {
             var timeRemaining = _appLimits[executablePath] - _appLimits[executablePath + "warning"];
-            var appName = Uri.IsWellFormedUriString(executablePath, UriKind.Absolute)
-                ? executablePath
-                : Path.GetFileNameWithoutExtension(executablePath);
 
             try
             {
-                await _appRepo.UpdateIgnoreStatus(appName, true);
+                await _appRepo.UpdateIgnoreStatus(executablePath, true);
                 _ignoreStatusCache[executablePath] = true;
 
                 string warning = timeRemaining >= TimeSpan.FromMinutes(1)
-                    ? $"WARNING: You have been using {appName} for an extended period. The application will close in {timeRemaining.Minutes} minutes once you select OK and usage continues."
-                    : $"WARNING: You have been using {appName} for an extended period. The application will close in {timeRemaining.Seconds} seconds once you select OK and usage continues.";
+                    ? $"WARNING: You have been using {executablePath} for an extended period. The application will close in {timeRemaining.Minutes} minutes once you select OK and usage continues."
+                    : $"WARNING: You have been using {executablePath} for an extended period. The application will close in {timeRemaining.Seconds} seconds once you select OK and usage continues.";
 
                 var messages = await _messageRepo.GetMessagesForComputer(_computerId);
                 Random r = new Random();
@@ -338,7 +335,7 @@ namespace AppLimiter
                 await _warningManager.ShowWarning(
                     message,
                     warning,
-                    appName,
+                    executablePath,
                     _computerId,
                     UpdateIgnoreStatus,
                     _appRepo,
@@ -351,7 +348,7 @@ namespace AppLimiter
                 _logger.LogError(ex, "Failed to show warning message");
                 // Reset cache on any error
                 _ignoreStatusCache[executablePath] = false;
-                await _appRepo.UpdateIgnoreStatus(appName, false);
+                await _appRepo.UpdateIgnoreStatus(executablePath, false);
             }
         }
 
