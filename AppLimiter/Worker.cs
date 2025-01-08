@@ -318,15 +318,17 @@ namespace AppLimiter
         private async void ShowWarningMessage(string executablePath)
         {
             var timeRemaining = _appLimits[executablePath] - _appLimits[executablePath + "warning"];
-
+            var displayName = Uri.IsWellFormedUriString(executablePath, UriKind.Absolute)
+                   ? GetDomainFromUrl(executablePath)
+                   : Path.GetFileNameWithoutExtension(executablePath);
             try
             {
                 await _appRepo.UpdateIgnoreStatus(executablePath, true);
                 _ignoreStatusCache[executablePath] = true;
 
                 string warning = timeRemaining >= TimeSpan.FromMinutes(1)
-                    ? $"WARNING: You have been using {executablePath} for an extended period. The application will close in {timeRemaining.Minutes} minutes once you select OK and usage continues."
-                    : $"WARNING: You have been using {executablePath} for an extended period. The application will close in {timeRemaining.Seconds} seconds once you select OK and usage continues.";
+                    ? $"WARNING: You have been using {displayName} for an extended period. The application will close in {timeRemaining.Minutes} minutes once you select OK and usage continues."
+                    : $"WARNING: You have been using {displayName} for an extended period. The application will close in {timeRemaining.Seconds} seconds once you select OK and usage continues.";
 
                 var messages = await _messageRepo.GetMessagesForComputer(_computerId);
                 Random r = new Random();
