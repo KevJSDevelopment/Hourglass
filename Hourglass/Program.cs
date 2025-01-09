@@ -12,7 +12,7 @@ internal class Program
         // Configure logging
         var logsPath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "AppLimiter",
+            "Hourglass",
             "Logs"
         );
         Directory.CreateDirectory(logsPath);
@@ -34,7 +34,7 @@ internal class Program
 
         try
         {
-            Log.Information("Starting AppLimiter application");
+            Log.Information("Starting Hourglass application");
 
             // Configure services
             builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
@@ -58,7 +58,7 @@ internal class Program
         }
         finally
         {
-            Log.Information("Shutting down AppLimiter application");
+            Log.Information("Shutting down Hourglass application");
             Log.CloseAndFlush();
         }
     }

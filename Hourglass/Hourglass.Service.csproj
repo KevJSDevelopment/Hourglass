@@ -5,7 +5,7 @@
     <UseWindowsForms>true</UseWindowsForms>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <UserSecretsId>dotnet-AppLimiter-dcdbb7dd-ad2e-4cec-9521-08d2f1911596</UserSecretsId>
+    <UserSecretsId>dotnet-Hourglass-dcdbb7dd-ad2e-4cec-9521-08d2f1911596</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
