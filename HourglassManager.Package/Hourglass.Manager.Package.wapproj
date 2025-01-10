@@ -26,7 +26,7 @@
     <TargetPlatformVersion>10.0.22621.0</TargetPlatformVersion>
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
     <DefaultLanguage>en-US</DefaultLanguage>
-    <AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
+    <AppxPackageSigningEnabled>False</AppxPackageSigningEnabled>
     <NoWarn>$(NoWarn);NU1702</NoWarn>
     <EntryPointProjectUniqueName>..\HourglassManager\HourglassManager.WPF.csproj</EntryPointProjectUniqueName>
     <PackageCertificateThumbprint>0AB969D78175CDDA937047FDE474F52366F1CEFE</PackageCertificateThumbprint>
