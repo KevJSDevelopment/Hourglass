@@ -17,6 +17,12 @@ namespace HourglassManager.WPF.Views
             InitializeComponent();
             _viewModel = new AddWebsiteViewModel(appRepo, computerId);
             DataContext = _viewModel;
+
+            _viewModel.RequestClose += (result) =>
+            {
+                DialogResult = result;
+                Close();
+            };
         }
     }
 }

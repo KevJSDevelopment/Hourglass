@@ -42,6 +42,10 @@ namespace HourglassManager.WPF.ViewModels
             };
 
             await _appRepository.SaveLimits(newSite);
+
+            RequestClose?.Invoke(true);
         }
+
+        public event Action<bool> RequestClose;
     }
 }

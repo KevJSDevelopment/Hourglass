@@ -16,7 +16,7 @@ namespace HourglassManager.WPF
 
             // Get connection string from app.config
             string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
-            string solutionDirectory = Path.GetFullPath(Path.Combine(baseDirectory, @"..\..\..\.."));
+            string solutionDirectory = Path.GetFullPath(Path.Combine(baseDirectory, @"..\..\..\..\.."));
             string configPath = Path.Combine(solutionDirectory, "Hourglass", "appsettings.json");
 
             var builder = new ConfigurationBuilder()
