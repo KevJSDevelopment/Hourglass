@@ -63,7 +63,7 @@ namespace Hourglass
 
                         await Task.WhenAll(appUsageTask, websiteUsageTask, enforceTask);
 
-                        // Merge usage results
+                        // Merge usage results with logging
                         _logger.LogDebug("Merged usage before update: {Usage}", string.Join(", ", _appUsage.Select(kvp => $"{kvp.Key}: {kvp.Value}")));
                         foreach (var usage in appUsageTask.Result.Concat(websiteUsageTask.Result))
                         {
@@ -140,6 +140,7 @@ namespace Hourglass
 
         private async void ShowWarningMessage(string executablePath)
         {
+            _logger.LogDebug("Starting ShowWarningMessage for {Path}", executablePath);
             var timeRemaining = _appLimits[executablePath] - _appLimits[executablePath + "warning"];
             var displayName = Uri.IsWellFormedUriString(executablePath, UriKind.Absolute)
                 ? GetDomainFromUrl(executablePath)
@@ -174,6 +175,7 @@ namespace Hourglass
                 _ignoreStatusCache[executablePath] = false;
                 await _appRepo.UpdateIgnoreStatus(executablePath, false);
             }
+            _logger.LogDebug("Finished ShowWarningMessage for {Path}", executablePath);
         }
 
         private string GetDomainFromUrl(string url)

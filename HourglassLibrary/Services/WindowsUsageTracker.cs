@@ -49,31 +49,27 @@ namespace HourglassLibrary.Services
             return await Task.FromResult(usage);
         }
 
+        // HourglassLibrary/Services/WindowsUsageTracker.cs
         public async Task<Dictionary<string, TimeSpan>> GetActiveWebsiteUsage(Dictionary<string, string> processToPathMap, IWebsiteTracker websiteTracker)
         {
             var usage = new Dictionary<string, TimeSpan>();
             try
             {
-                _logger.LogDebug("Starting website usage tracking. processToPathMap: {Map}", string.Join(", ", processToPathMap.Select(kvp => $"{kvp.Key}: {kvp.Value}")));
-
                 var websiteLimits = processToPathMap
                     .Where(kvp => Uri.IsWellFormedUriString(kvp.Value, UriKind.Absolute))
                     .Select(kvp => new { OriginalUrl = kvp.Value, Domain = GetDomainFromUrl(kvp.Value) })
                     .ToList();
 
-                _logger.LogDebug("Website limits found: {Count} entries", websiteLimits.Count);
                 foreach (var website in websiteLimits)
                 {
-                    _logger.LogDebug("Checking domain: {Domain} from URL: {OriginalUrl}", website.Domain, website.OriginalUrl);
                     if (websiteTracker.IsDomainActive(website.Domain))
                     {
                         usage.TryAdd(website.OriginalUrl, TimeSpan.Zero);
                         usage[website.OriginalUrl] += TimeSpan.FromSeconds(1);
+                        // Add the warning variant
+                        usage.TryAdd(website.OriginalUrl + "warning", TimeSpan.Zero);
+                        usage[website.OriginalUrl + "warning"] += TimeSpan.FromSeconds(1);
                         _logger.LogDebug("Active website found: {Domain}", website.Domain);
-                    }
-                    else
-                    {
-                        _logger.LogDebug("Domain {Domain} is NOT active", website.Domain);
                     }
                 }
             }
@@ -81,7 +77,6 @@ namespace HourglassLibrary.Services
             {
                 _logger.LogError(ex, "Error tracking website usage");
             }
-            _logger.LogDebug("Returning website usage: {Usage}", string.Join(", ", usage.Select(kvp => $"{kvp.Key}: {kvp.Value}")));
             return await Task.FromResult(usage);
         }
 
@@ -96,45 +91,46 @@ namespace HourglassLibrary.Services
             {
                 try
                 {
-                    string baseApp = app.EndsWith("warning") ? app[..^7] : app;
+                    string baseApp = app.EndsWith("warning") ? app[..^7] : app; // Remove "warning" if present
 
-                    if (appLimits.TryGetValue(app, out TimeSpan limit) && appUsage[app] >= limit)
+                    // Check warning limit
+                    if (appLimits.TryGetValue(baseApp + "warning", out TimeSpan warningLimit) && appUsage.ContainsKey(baseApp + "warning") && appUsage[baseApp + "warning"] >= warningLimit)
                     {
-                        if (app.EndsWith("warning"))
+                        if (!_shownWarnings.Contains(baseApp))
                         {
-                            if (!_shownWarnings.Contains(baseApp))
-                            {
-                                _logger.LogInformation("Warning threshold reached for {AppName}. Usage: {Usage}, Limit: {Limit}",
-                                    baseApp, appUsage[app], limit);
-                                showWarningCallback(baseApp);
-                                _shownWarnings.Add(baseApp);
-                            }
+                            _logger.LogInformation("Warning threshold reached for {AppName}. Usage: {Usage}, Limit: {Limit}",
+                                baseApp, appUsage[baseApp + "warning"], warningLimit);
+                            showWarningCallback(baseApp);
+                            _shownWarnings.Add(baseApp);
                         }
-                        else
+                    }
+
+                    // Check kill limit
+                    if (appLimits.TryGetValue(baseApp, out TimeSpan killLimit) && appUsage[baseApp] >= killLimit)
+                    {
+                        _logger.LogWarning("Usage limit exceeded for {AppName}. Usage: {Usage}, Limit: {Limit}",
+                            baseApp, appUsage[baseApp], killLimit);
+
+                        var processName = processToPathMap
+                            .FirstOrDefault(x => x.Value.Equals(baseApp, StringComparison.OrdinalIgnoreCase))
+                            .Key;
+
+                        if (!string.IsNullOrEmpty(processName))
                         {
-                            _logger.LogWarning("Usage limit exceeded for {AppName}. Usage: {Usage}, Limit: {Limit}",
-                                baseApp, appUsage[app], limit);
-
-                            var processName = processToPathMap
-                                .FirstOrDefault(x => x.Value.Equals(baseApp, StringComparison.OrdinalIgnoreCase))
-                                .Key;
-
-                            if (!string.IsNullOrEmpty(processName))
+                            if (Uri.IsWellFormedUriString(baseApp, UriKind.Absolute))
                             {
-                                if (Uri.IsWellFormedUriString(baseApp, UriKind.Absolute))
-                                {
-                                    _logger.LogInformation("Website limit exceeded for {Domain}", baseApp);
-                                    await communicator.SendCloseTabCommand(GetDomainFromUrl(baseApp));
-                                }
-                                else
-                                {
-                                    await TerminateProcess(processName);
-                                }
-
-                                appUsage[baseApp] = TimeSpan.Zero;
-                                appUsage[baseApp + "warning"] = TimeSpan.Zero;
-                                _shownWarnings.Remove(baseApp);
+                                _logger.LogInformation("Website limit exceeded for {Domain}", baseApp);
+                                await communicator.SendCloseTabCommand(GetDomainFromUrl(baseApp));
                             }
+                            else
+                            {
+                                await TerminateProcess(processName);
+                            }
+
+                            appUsage[baseApp] = TimeSpan.Zero;
+                            if (appUsage.ContainsKey(baseApp + "warning"))
+                                appUsage[baseApp + "warning"] = TimeSpan.Zero;
+                            _shownWarnings.Remove(baseApp);
                         }
                     }
                 }
