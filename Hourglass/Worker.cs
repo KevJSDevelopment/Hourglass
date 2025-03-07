@@ -64,11 +64,13 @@ namespace Hourglass
                         await Task.WhenAll(appUsageTask, websiteUsageTask, enforceTask);
 
                         // Merge usage results
+                        _logger.LogDebug("Merged usage before update: {Usage}", string.Join(", ", _appUsage.Select(kvp => $"{kvp.Key}: {kvp.Value}")));
                         foreach (var usage in appUsageTask.Result.Concat(websiteUsageTask.Result))
                         {
                             _appUsage.TryAdd(usage.Key, TimeSpan.Zero);
                             _appUsage[usage.Key] += usage.Value;
                         }
+                        _logger.LogDebug("Merged usage after update: {Usage}", string.Join(", ", _appUsage.Select(kvp => $"{kvp.Key}: {kvp.Value}")));
 
                         var executionTime = DateTime.UtcNow - startTime;
 

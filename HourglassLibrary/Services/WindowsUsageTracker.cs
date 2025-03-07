@@ -54,18 +54,26 @@ namespace HourglassLibrary.Services
             var usage = new Dictionary<string, TimeSpan>();
             try
             {
+                _logger.LogDebug("Starting website usage tracking. processToPathMap: {Map}", string.Join(", ", processToPathMap.Select(kvp => $"{kvp.Key}: {kvp.Value}")));
+
                 var websiteLimits = processToPathMap
                     .Where(kvp => Uri.IsWellFormedUriString(kvp.Value, UriKind.Absolute))
                     .Select(kvp => new { OriginalUrl = kvp.Value, Domain = GetDomainFromUrl(kvp.Value) })
                     .ToList();
 
+                _logger.LogDebug("Website limits found: {Count} entries", websiteLimits.Count);
                 foreach (var website in websiteLimits)
                 {
-                    if (websiteTracker.IsDomainActive(website.Domain)) // Use interface
+                    _logger.LogDebug("Checking domain: {Domain} from URL: {OriginalUrl}", website.Domain, website.OriginalUrl);
+                    if (websiteTracker.IsDomainActive(website.Domain))
                     {
                         usage.TryAdd(website.OriginalUrl, TimeSpan.Zero);
                         usage[website.OriginalUrl] += TimeSpan.FromSeconds(1);
                         _logger.LogDebug("Active website found: {Domain}", website.Domain);
+                    }
+                    else
+                    {
+                        _logger.LogDebug("Domain {Domain} is NOT active", website.Domain);
                     }
                 }
             }
@@ -73,6 +81,7 @@ namespace HourglassLibrary.Services
             {
                 _logger.LogError(ex, "Error tracking website usage");
             }
+            _logger.LogDebug("Returning website usage: {Usage}", string.Join(", ", usage.Select(kvp => $"{kvp.Key}: {kvp.Value}")));
             return await Task.FromResult(usage);
         }
 
