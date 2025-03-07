@@ -1,7 +1,15 @@
+// Hourglass/Program.cs
 using Hourglass;
 using HourglassLibrary.Data;
+using HourglassLibrary.Interfaces;
+using HourglassLibrary.Services;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Serilog;
 using Serilog.Events;
+using System;
+using System.IO;
+using System.Threading.Tasks;
 
 internal class Program
 {
@@ -44,9 +52,9 @@ internal class Program
             // Add required services
             builder.Services.AddSingleton<IWebSocketCommunicator, WebSocketServerService>();
             builder.Services.AddHostedService(sp => (WebSocketServerService)sp.GetRequiredService<IWebSocketCommunicator>());
-            builder.Services.AddSingleton<WebsiteTracker>();
+            builder.Services.AddSingleton<IWebsiteTracker, WebsiteTracker>(); // Updated to interface
+            builder.Services.AddSingleton<IUsageTracker, WindowsUsageTracker>(); // Added for Worker
             builder.Services.AddHostedService<Worker>();
-
 
             var host = builder.Build();
             DatabaseManager.Initialize(host.Services.GetRequiredService<IConfiguration>());
