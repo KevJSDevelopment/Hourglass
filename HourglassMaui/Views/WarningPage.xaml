@@ -1,0 +1,28 @@
+<!-- HourglassMaui/Views/WarningPage.xaml -->
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="HourglassMaui.Views.WarningPage"
+             Title="Warning"
+             BackgroundColor="#FF5555"
+             Shell.NavBarIsVisible="False">
+    <VerticalStackLayout Spacing="20" Padding="20" VerticalOptions="Center" HorizontalOptions="Center">
+        <Label Text="{Binding WarningMessage}"
+               FontSize="18"
+               FontAttributes="Bold"
+               TextColor="White"
+               HorizontalOptions="Center"
+               VerticalOptions="Center" />
+        <Label Text="{Binding MotivationalMessage}"
+               FontSize="16"
+               TextColor="White"
+               HorizontalOptions="Center"
+               VerticalOptions="Center" />
+        <Button Text="OK"
+                Clicked="OnOkClicked"
+                BackgroundColor="White"
+                TextColor="Black"
+                WidthRequest="150"
+                HorizontalOptions="Center"
+                VerticalOptions="End" />
+    </VerticalStackLayout>
+</ContentPage>
