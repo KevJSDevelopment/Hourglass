@@ -1,0 +1,52 @@
+<!-- HourglassMaui/Views/DashboardPage.xaml -->
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="HourglassMaui.Views.DashboardPage"
+             Title="Hourglass Dashboard">
+    <ScrollView>
+        <VerticalStackLayout Spacing="10" Padding="20">
+            <Label Text="Hourglass Dashboard" FontSize="24" FontAttributes="Bold" HorizontalOptions="Center" />
+            <Label Text="Manage App and Website Limits" FontSize="18" />
+
+            <!-- List of Apps/Websites -->
+            <CollectionView ItemsSource="{Binding Limits}">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <HorizontalStackLayout Spacing="10" Padding="10">
+                            <Label Text="{Binding Name}" FontSize="16" VerticalOptions="Center" />
+                            <Entry Placeholder="Warning Time (e.g., 00:04:00)" Text="{Binding WarningTime}" WidthRequest="150" />
+                            <Entry Placeholder="Kill Time (e.g., 00:05:00)" Text="{Binding KillTime}" WidthRequest="150" />
+                            <CheckBox IsChecked="{Binding Ignore}" VerticalOptions="Center" />
+                            <Label Text="Ignore" VerticalOptions="Center" />
+                            <Button Text="Delete" Command="{Binding DeleteCommand}" CommandParameter="{Binding Path=Path}" WidthRequest="100" />
+                        </HorizontalStackLayout>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <Entry Placeholder="Add New App/Website Path" Text="{Binding NewLimitPath}" WidthRequest="300" />
+            <Entry Placeholder="Name" Text="{Binding NewLimitName}" WidthRequest="150" />
+            <Entry Placeholder="Warning Time" Text="{Binding NewWarningTime}" WidthRequest="150" />
+            <Entry Placeholder="Kill Time" Text="{Binding NewKillTime}" WidthRequest="150" />
+            <CheckBox IsChecked="{Binding NewLimitIgnore}" VerticalOptions="Center" />
+            <Label Text="Ignore" VerticalOptions="Center" />
+            <Button Text="Add Limit" Command="{Binding AddLimitCommand}" WidthRequest="150" HorizontalOptions="Center" />
+
+            <!-- Motivational Messages -->
+            <Label Text="Motivational Messages" FontSize="18" Margin="0,20,0,0" />
+            <CollectionView ItemsSource="{Binding Messages}">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <HorizontalStackLayout Spacing="10" Padding="10">
+                            <Label Text="{Binding Message}" FontSize="16" VerticalOptions="Center" />
+                            <Button Text="Delete" Command="{Binding DeleteMessageCommand}" CommandParameter="{Binding Id}" WidthRequest="100" />
+                        </HorizontalStackLayout>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <Entry Placeholder="Add New Message" Text="{Binding NewMessage}" WidthRequest="300" />
+            <Button Text="Add Message" Command="{Binding AddMessageCommand}" WidthRequest="150" HorizontalOptions="Center" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

@@ -7,6 +7,7 @@ namespace HourglassMaui.Views
     {
         public WarningPage(string warningMessage, string motivationalMessage)
         {
+            InitializeComponent();
             BindingContext = new
             {
                 WarningMessage = warningMessage,

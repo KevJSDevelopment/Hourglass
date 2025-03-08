@@ -1,14 +1,28 @@
-﻿namespace HourglassMaui;
+﻿// HourglassMaui/App.xaml.cs
+using HourglassMaui.ViewModels;
+using HourglassMaui.Views;
+using Microsoft.Extensions.DependencyInjection;
+using System.IO;
 
-public partial class App : Application
+namespace HourglassMaui
 {
-	public App()
-	{
-		InitializeComponent();
-	}
+    public partial class App : Application
+    {
+        public App(IServiceProvider serviceProvider)
+        {
+            InitializeComponent();
 
-	protected override Window CreateWindow(IActivationState? activationState)
-	{
-		return new Window(new AppShell());
-	}
+            // Copy appsettings.json to FileSystem.AppDataDirectory if it doesn't exist
+            string targetPath = Path.Combine(FileSystem.AppDataDirectory, "appsettings.json");
+            if (!File.Exists(targetPath))
+            {
+                using var stream = FileSystem.OpenAppPackageFileAsync("appsettings.json").GetAwaiter().GetResult();
+                using var fileStream = new FileStream(targetPath, FileMode.Create, FileAccess.Write);
+                stream.CopyTo(fileStream);
+            }
+
+            var dashboardViewModel = serviceProvider.GetRequiredService<DashboardViewModel>();
+            MainPage = new NavigationPage(new DashboardPage(dashboardViewModel));
+        }
+    }
 }
