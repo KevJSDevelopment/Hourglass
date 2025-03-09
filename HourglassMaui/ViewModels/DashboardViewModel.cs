@@ -1,117 +1,98 @@
-﻿// HourglassMaui/ViewModels/DashboardViewModel.cs
+﻿// HourglassMaui/ViewModels/LimitsDashboardViewModel.cs
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using HourglassLibrary.Data;
 using HourglassLibrary.Dtos;
+using HourglassMaui.Views;
 using System.Collections.ObjectModel;
+
 
 namespace HourglassMaui.ViewModels
 {
     public partial class DashboardViewModel : ObservableObject
     {
         private readonly AppRepository _appRepo;
-        private readonly MotivationalMessageRepository _messageRepo;
         private readonly string _computerId;
+        private ProcessInfo _selectedLimit;
 
         [ObservableProperty]
         private ObservableCollection<ProcessInfo> limits;
 
         [ObservableProperty]
-        private ObservableCollection<MotivationalMessage> messages;
+        private bool isLimitSelected;
 
-        [ObservableProperty]
-        private string newLimitPath;
-
-        [ObservableProperty]
-        private string newLimitName;
-
-        [ObservableProperty]
-        private string newWarningTime;
-
-        [ObservableProperty]
-        private string newKillTime;
-
-        [ObservableProperty]
-        private bool newLimitIgnore;
-
-        [ObservableProperty]
-        private string newMessage;
-
-        public DashboardViewModel(AppRepository appRepo, MotivationalMessageRepository messageRepo)
+        public ProcessInfo SelectedLimit
         {
-            _appRepo = appRepo;
-            _messageRepo = messageRepo;
-            _computerId = ComputerIdentifier.GetUniqueIdentifier();
-            LoadDataAsync();
+            get => _selectedLimit;
+            set
+            {
+                SetProperty(ref _selectedLimit, value);
+                IsLimitSelected = _selectedLimit != null;
+            }
         }
 
-        private async Task LoadDataAsync()
+        public DashboardViewModel(AppRepository appRepo)
+        {
+            _appRepo = appRepo;
+            _computerId = ComputerIdentifier.GetUniqueIdentifier();
+            LoadLimitsAsync();
+        }
+
+        private async Task LoadLimitsAsync()
         {
             var loadedLimits = await _appRepo.LoadAllLimits(_computerId);
             Limits = new ObservableCollection<ProcessInfo>(loadedLimits);
-
-            var loadedMessages = await _messageRepo.GetMessagesForComputer(_computerId);
-            Messages = new ObservableCollection<MotivationalMessage>(loadedMessages);
+            SelectedLimit = null; // Reset selection after refresh
         }
 
         [RelayCommand]
-        private async Task AddLimit()
+        private async Task SetLimits()
         {
-            if (!string.IsNullOrWhiteSpace(NewLimitPath) && !string.IsNullOrWhiteSpace(NewLimitName))
+            if (SelectedLimit != null)
             {
-                var processInfo = new ProcessInfo
+                await Application.Current.MainPage.Navigation.PushModalAsync(new SetLimitsPage(new SetLimitsViewModel(_appRepo, _computerId, SelectedLimit)));
+                await LoadLimitsAsync(); // Auto-refresh after setting limits
+            }
+        }
+
+        [RelayCommand]
+        private async Task ShowAddOptions()
+        {
+            var action = await Application.Current.MainPage.DisplayActionSheet("Add New Limit", "Cancel", null, "Add Application", "Add Website");
+            if (action == "Add Application" || action == "Add Website")
+            {
+                var viewModel = new SetLimitsViewModel(_appRepo, _computerId)
                 {
-                    ComputerId = _computerId,
-                    Name = NewLimitName,
-                    Path = NewLimitPath,
-                    WarningTime = NewWarningTime,
-                    KillTime = NewKillTime,
-                    Ignore = NewLimitIgnore,
-                    IsWebsite = Uri.IsWellFormedUriString(NewLimitPath, UriKind.Absolute)
+                    IsWebsite = action == "Add Website"
                 };
-                await _appRepo.SaveLimits(processInfo);
-                await LoadDataAsync();
-                NewLimitPath = string.Empty;
-                NewLimitName = string.Empty;
-                NewWarningTime = string.Empty;
-                NewKillTime = string.Empty;
-                NewLimitIgnore = false;
-                await Application.Current.MainPage.DisplayAlert("Success", "Limit added successfully", "OK");
+                await Application.Current.MainPage.Navigation.PushModalAsync(new SetLimitsPage(viewModel));
+                await LoadLimitsAsync(); // Auto-refresh after adding
             }
         }
 
         [RelayCommand]
-        private async Task DeleteLimit(string path)
+        private async Task Remove()
         {
-            if (!string.IsNullOrWhiteSpace(path))
+            if (SelectedLimit != null)
             {
-                await _appRepo.DeleteApp(path);
-                await LoadDataAsync();
-                await Application.Current.MainPage.DisplayAlert("Success", "Limit deleted successfully", "OK");
+                await _appRepo.DeleteApp(SelectedLimit.Path);
+                await LoadLimitsAsync(); // Auto-refresh after removing
+                await Application.Current.MainPage.DisplayAlert("Success", "Limit removed successfully", "OK");
             }
         }
 
         [RelayCommand]
-        private async Task AddMessage()
+        private async Task ManageMessages()
         {
-            if (!string.IsNullOrWhiteSpace(NewMessage))
-            {
-                await _messageRepo.AddMessage(_computerId, NewMessage);
-                await LoadDataAsync();
-                NewMessage = string.Empty;
-                await Application.Current.MainPage.DisplayAlert("Success", "Message added successfully", "OK");
-            }
+            var messagesViewModel = Application.Current.MainPage.Handler.MauiContext.Services.GetRequiredService<MotivationalMessagesViewModel>();
+            await Application.Current.MainPage.Navigation.PushAsync(new MotivationalMessagesPage(messagesViewModel));
         }
 
         [RelayCommand]
-        private async Task DeleteMessage(int id)
+        private async Task Settings()
         {
-            if (id > 0)
-            {
-                await _messageRepo.DeleteMessage(id);
-                await LoadDataAsync();
-                await Application.Current.MainPage.DisplayAlert("Success", "Message deleted successfully", "OK");
-            }
+            await Application.Current.MainPage.DisplayAlert("Settings", "Settings page not implemented yet.", "OK");
+            // Future: Navigate to a SettingsPage
         }
     }
 }

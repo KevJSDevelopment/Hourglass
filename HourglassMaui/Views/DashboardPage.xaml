@@ -1,52 +1,44 @@
-<!-- HourglassMaui/Views/DashboardPage.xaml -->
+<!-- HourglassMaui/Views/LimitsDashboardPage.xaml -->
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="HourglassMaui.Views.DashboardPage"
-             Title="Hourglass Dashboard">
-    <ScrollView>
-        <VerticalStackLayout Spacing="10" Padding="20">
-            <Label Text="Hourglass Dashboard" FontSize="24" FontAttributes="Bold" HorizontalOptions="Center" />
-            <Label Text="Manage App and Website Limits" FontSize="18" />
+             Title="Dashboard">
+    <VerticalStackLayout Spacing="10" Padding="20">
+        <Label Text="Dashboard" FontSize="24" FontAttributes="Bold" HorizontalOptions="Center" />
 
-            <!-- List of Apps/Websites -->
-            <CollectionView ItemsSource="{Binding Limits}">
+        <!-- Header Row -->
+        <Grid Style="{StaticResource HeaderGridStyle}" ColumnDefinitions="*,*,*,*,*,*" RowDefinitions="Auto,Auto">
+            <Label Grid.Column="0" Text="Application Name" FontAttributes="Bold" HorizontalOptions="Center" />
+            <Label Grid.Column="1" Text="Path" FontAttributes="Bold" HorizontalOptions="Center" />
+            <Label Grid.Column="2" Text="Warning Time" FontAttributes="Bold" HorizontalOptions="Center" />
+            <Label Grid.Column="3" Text="Kill Time" FontAttributes="Bold" HorizontalOptions="Center" />
+            <Label Grid.Column="4" Text="IsWebsite" FontAttributes="Bold" HorizontalOptions="Center" />
+            <Label Grid.Column="5" Text="Ignore Limit" FontAttributes="Bold" HorizontalOptions="Center" />
+
+            <!-- CollectionView for Limits -->
+            <CollectionView Grid.Row="1" ItemsSource="{Binding Limits}" SelectionMode="Single" SelectedItem="{Binding SelectedLimit}">
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
-                        <HorizontalStackLayout Spacing="10" Padding="10">
-                            <Label Text="{Binding Name}" FontSize="16" VerticalOptions="Center" />
-                            <Entry Placeholder="Warning Time (e.g., 00:04:00)" Text="{Binding WarningTime}" WidthRequest="150" />
-                            <Entry Placeholder="Kill Time (e.g., 00:05:00)" Text="{Binding KillTime}" WidthRequest="150" />
-                            <CheckBox IsChecked="{Binding Ignore}" VerticalOptions="Center" />
-                            <Label Text="Ignore" VerticalOptions="Center" />
-                            <Button Text="Delete" Command="{Binding DeleteCommand}" CommandParameter="{Binding Path=Path}" WidthRequest="100" />
-                        </HorizontalStackLayout>
+                        <Grid Style="{StaticResource RowGridStyle}" ColumnDefinitions="*,*,*,*,*,*">
+                            <Label Grid.Column="0" Text="{Binding Name}" FontSize="14" VerticalOptions="Center" HorizontalOptions="Center" />
+                            <Label Grid.Column="1" Text="{Binding Path}" FontSize="14" VerticalOptions="Center" HorizontalOptions="Center" />
+                            <Label Grid.Column="2" Text="{Binding WarningTime}" FontSize="14" VerticalOptions="Center" HorizontalOptions="Center" />
+                            <Label Grid.Column="3" Text="{Binding KillTime}" FontSize="14" VerticalOptions="Center" HorizontalOptions="Center" />
+                            <Label Grid.Column="4" Text="{Binding IsWebsite}" FontSize="14" VerticalOptions="Center" HorizontalOptions="Center" />
+                            <CheckBox Grid.Column="5" IsChecked="{Binding Ignore}" VerticalOptions="Center" HorizontalOptions="Center" />
+                        </Grid>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>
+        </Grid>
 
-            <Entry Placeholder="Add New App/Website Path" Text="{Binding NewLimitPath}" WidthRequest="300" />
-            <Entry Placeholder="Name" Text="{Binding NewLimitName}" WidthRequest="150" />
-            <Entry Placeholder="Warning Time" Text="{Binding NewWarningTime}" WidthRequest="150" />
-            <Entry Placeholder="Kill Time" Text="{Binding NewKillTime}" WidthRequest="150" />
-            <CheckBox IsChecked="{Binding NewLimitIgnore}" VerticalOptions="Center" />
-            <Label Text="Ignore" VerticalOptions="Center" />
-            <Button Text="Add Limit" Command="{Binding AddLimitCommand}" WidthRequest="150" HorizontalOptions="Center" />
-
-            <!-- Motivational Messages -->
-            <Label Text="Motivational Messages" FontSize="18" Margin="0,20,0,0" />
-            <CollectionView ItemsSource="{Binding Messages}">
-                <CollectionView.ItemTemplate>
-                    <DataTemplate>
-                        <HorizontalStackLayout Spacing="10" Padding="10">
-                            <Label Text="{Binding Message}" FontSize="16" VerticalOptions="Center" />
-                            <Button Text="Delete" Command="{Binding DeleteMessageCommand}" CommandParameter="{Binding Id}" WidthRequest="100" />
-                        </HorizontalStackLayout>
-                    </DataTemplate>
-                </CollectionView.ItemTemplate>
-            </CollectionView>
-
-            <Entry Placeholder="Add New Message" Text="{Binding NewMessage}" WidthRequest="300" />
-            <Button Text="Add Message" Command="{Binding AddMessageCommand}" WidthRequest="150" HorizontalOptions="Center" />
-        </VerticalStackLayout>
-    </ScrollView>
+        <!-- Action Buttons -->
+        <HorizontalStackLayout Spacing="10" HorizontalOptions="Center" Margin="0,20,0,0">
+            <Button Text="Set Limits" Command="{Binding SetLimitsCommand}" IsEnabled="{Binding IsLimitSelected}" WidthRequest="150" />
+            <Button Text="Add" Command="{Binding ShowAddOptionsCommand}" WidthRequest="150" />
+            <Button Text="Remove" Command="{Binding RemoveCommand}" IsEnabled="{Binding IsLimitSelected}" WidthRequest="150" />
+            <Button Text="Manage Messages" Command="{Binding ManageMessagesCommand}" WidthRequest="150" />
+            <Button Text="Settings" Command="{Binding SettingsCommand}" WidthRequest="150" />
+        </HorizontalStackLayout>
+    </VerticalStackLayout>
 </ContentPage>

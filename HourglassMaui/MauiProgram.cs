@@ -43,30 +43,32 @@ namespace HourglassMaui
             // builder.Services.AddSingleton<IWebSocketCommunicator, WebSocketCommunicator>();
             builder.Services.AddHostedService<UsageTrackingService>();
             builder.Services.AddSingleton<DashboardViewModel>();
+            builder.Services.AddSingleton<MotivationalMessagesViewModel>();
+            builder.Services.AddSingleton<AddMessageViewModel>(); // Can be transient if preferred
 
             // Register platform-specific IUsageTracker implementations
             builder.Services.AddSingleton<IUsageTracker>(provider =>
             {
                 var loggerFactory = provider.GetRequiredService<ILoggerFactory>();
-#if WINDOWS
-                return new WindowsUsageTracker(loggerFactory.CreateLogger<WindowsUsageTracker>());
-#elif ANDROID
-                return new AndroidUsageTracker(loggerFactory.CreateLogger<AndroidUsageTracker>());
-#elif IOS
-                return new IosUsageTracker(loggerFactory.CreateLogger<IosUsageTracker>());
-#elif MACCATALYST
-                return new MacUsageTracker(loggerFactory.CreateLogger<MacUsageTracker>());
-#else
-                throw new PlatformNotSupportedException("Usage tracking not supported on this platform.");
-#endif
+                #if WINDOWS
+                    return new WindowsUsageTracker(loggerFactory.CreateLogger<WindowsUsageTracker>());
+                #elif ANDROID
+                    return new AndroidUsageTracker(loggerFactory.CreateLogger<AndroidUsageTracker>());
+                #elif IOS
+                    return new IosUsageTracker(loggerFactory.CreateLogger<IosUsageTracker>());
+                #elif MACCATALYST
+                    return new MacUsageTracker(loggerFactory.CreateLogger<MacUsageTracker>());
+                #else
+                    throw new PlatformNotSupportedException("Usage tracking not supported on this platform.");
+                #endif
             });
 
             // Initialize DatabaseManager with the configuration
             DatabaseManager.Initialize(config);
 
-#if DEBUG
-            builder.Logging.AddDebug();
-#endif
+            #if DEBUG
+                builder.Logging.AddDebug();
+            #endif
 
             return builder.Build();
         }

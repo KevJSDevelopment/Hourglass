@@ -1,0 +1,24 @@
+<!-- HourglassMaui/Views/MotivationalMessagesPage.xaml -->
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="HourglassMaui.Views.MotivationalMessagesPage"
+             Title="Manage Messages">
+    <ScrollView>
+        <VerticalStackLayout Spacing="10" Padding="20">
+            <Label Text="Motivational Messages" FontSize="24" FontAttributes="Bold" HorizontalOptions="Center" />
+
+            <CollectionView ItemsSource="{Binding Messages}">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <HorizontalStackLayout Spacing="10" Padding="10">
+                            <Label Text="{Binding Message}" FontSize="16" VerticalOptions="Center" />
+                            <Button Text="Delete" Command="{Binding DeleteCommand}" CommandParameter="{Binding Id}" WidthRequest="100" />
+                        </HorizontalStackLayout>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <Button Text="Add New Message" Command="{Binding AddMessageCommand}" WidthRequest="150" HorizontalOptions="Center" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
