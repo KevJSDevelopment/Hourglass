@@ -70,6 +70,7 @@ namespace HourglassMaui.ViewModels
         [RelayCommand]
         private async Task Cancel()
         {
+            // close and navigate
             await Application.Current.MainPage.Navigation.PopModalAsync();
         }
     }
