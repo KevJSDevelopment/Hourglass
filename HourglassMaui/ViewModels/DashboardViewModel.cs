@@ -61,10 +61,7 @@ namespace HourglassMaui.ViewModels
             var action = await Application.Current.MainPage.DisplayActionSheet("Add New Limit", "Cancel", null, "Add Application", "Add Website");
             if (action == "Add Application" || action == "Add Website")
             {
-                var viewModel = new SetLimitsViewModel(_appRepo, _computerId)
-                {
-                    IsWebsite = action == "Add Website"
-                };
+                var viewModel = new SetLimitsViewModel(_appRepo, _computerId, new ProcessInfo() { IsWebsite = action == "Add Website" });
                 await Application.Current.MainPage.Navigation.PushModalAsync(new SetLimitsPage(viewModel));
                 await LoadLimitsAsync(); // Auto-refresh after adding
             }

@@ -31,10 +31,16 @@ namespace HourglassMaui.ViewModels
         [ObservableProperty]
         private bool isWebsite;
 
+        [ObservableProperty]
+        private string placeholder;
+
         public SetLimitsViewModel(AppRepository appRepo, string computerId, ProcessInfo limit = null)
         {
             _appRepo = appRepo;
             _computerId = computerId;
+            if (limit.IsWebsite) Placeholder = "Add Url";
+            else Placeholder = "Add executable path";
+
             if (limit != null)
             {
                 Path = limit.Path;

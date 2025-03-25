@@ -5,7 +5,7 @@
              Title="Set Limit">
     <VerticalStackLayout Spacing="10" Padding="20">
         <Label Text="{Binding IsWebsite, StringFormat='Add New {0}', Converter={StaticResource BoolToTypeConverter}}" FontSize="24" FontAttributes="Bold" HorizontalOptions="Center" />
-        <Entry Placeholder="Add New App/Website Path" Text="{Binding Path}" WidthRequest="300" />
+        <Entry Placeholder="{Binding Placeholder}" Text="{Binding Path}" WidthRequest="300" />
         <Entry Placeholder="Name" Text="{Binding Name}" WidthRequest="150" />
         <Entry Placeholder="Warning Time (e.g., 00:04:00)" Text="{Binding WarningTime}" WidthRequest="150" />
         <Entry Placeholder="Kill Time (e.g., 00:05:00)" Text="{Binding KillTime}" WidthRequest="150" />
