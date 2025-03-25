@@ -5,7 +5,7 @@ using HourglassLibrary.Data;
 using HourglassLibrary.Dtos;
 using HourglassMaui.Views;
 using System.Collections.ObjectModel;
-
+using Microsoft.Maui.Controls;
 
 namespace HourglassMaui.ViewModels
 {
@@ -16,7 +16,7 @@ namespace HourglassMaui.ViewModels
         private ProcessInfo _selectedLimit;
 
         [ObservableProperty]
-        private ObservableCollection<ProcessInfo> limits;
+        private ObservableCollection<ProcessInfo> _limits; // Renamed to follow lowerCamel pattern
 
         [ObservableProperty]
         private bool isLimitSelected;

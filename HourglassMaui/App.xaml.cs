@@ -11,7 +11,6 @@ namespace HourglassMaui
         public App(IServiceProvider serviceProvider)
         {
             InitializeComponent();
-
             // Copy appsettings.json to FileSystem.AppDataDirectory if it doesn't exist
             string targetPath = Path.Combine(FileSystem.AppDataDirectory, "appsettings.json");
             if (!File.Exists(targetPath))

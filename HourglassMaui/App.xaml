@@ -4,11 +4,11 @@
              xmlns:converters="clr-namespace:HourglassMaui.Resources.Converters"
              x:Class="HourglassMaui.App">
     <Application.Resources>
-        <converters:BoolToTypeConverter x:Key="BoolToTypeConverter" />
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/Resources/Styles/Styles.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
+        <converters:BoolToTypeConverter x:Key="BoolToTypeConverter" />
     </Application.Resources>
 </Application>

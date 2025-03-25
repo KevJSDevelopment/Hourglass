@@ -1,4 +1,4 @@
-<!-- HourglassMaui/Views/LimitsDashboardPage.xaml -->
+<!-- HourglassMaui/Views/DashboardPage.xaml -->
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="HourglassMaui.Views.DashboardPage"
@@ -7,24 +7,24 @@
         <Label Text="Dashboard" FontSize="24" FontAttributes="Bold" HorizontalOptions="Center" />
 
         <!-- Header Row -->
-        <Grid Style="{StaticResource HeaderGridStyle}" ColumnDefinitions="*,*,*,*,*,*" RowDefinitions="Auto,Auto">
-            <Label Grid.Column="0" Text="Application Name" FontAttributes="Bold" HorizontalOptions="Center" />
-            <Label Grid.Column="1" Text="Path" FontAttributes="Bold" HorizontalOptions="Center" />
-            <Label Grid.Column="2" Text="Warning Time" FontAttributes="Bold" HorizontalOptions="Center" />
-            <Label Grid.Column="3" Text="Kill Time" FontAttributes="Bold" HorizontalOptions="Center" />
-            <Label Grid.Column="4" Text="IsWebsite" FontAttributes="Bold" HorizontalOptions="Center" />
-            <Label Grid.Column="5" Text="Ignore Limit" FontAttributes="Bold" HorizontalOptions="Center" />
+        <Grid Style="{DynamicResource HeaderGridStyle}" ColumnDefinitions="*,*,*,*,*,*" RowDefinitions="Auto,Auto">
+            <Label Grid.Column="0" Text="Application Name" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" />
+            <Label Grid.Column="1" Text="Path" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" />
+            <Label Grid.Column="2" Text="Warning Time" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" />
+            <Label Grid.Column="3" Text="Kill Time" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" />
+            <Label Grid.Column="4" Text="IsWebsite" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" />
+            <Label Grid.Column="5" Text="Ignore Limit" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" />
 
             <!-- CollectionView for Limits -->
-            <CollectionView Grid.Row="1" ItemsSource="{Binding Limits}" SelectionMode="Single" SelectedItem="{Binding SelectedLimit}">
+            <CollectionView Grid.Row="1" Grid.ColumnSpan="6" ItemsSource="{Binding Limits}" SelectionMode="Single" SelectedItem="{Binding SelectedLimit}">
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
-                        <Grid Style="{StaticResource RowGridStyle}" ColumnDefinitions="*,*,*,*,*,*">
-                            <Label Grid.Column="0" Text="{Binding Name}" FontSize="14" VerticalOptions="Center" HorizontalOptions="Center" />
-                            <Label Grid.Column="1" Text="{Binding Path}" FontSize="14" VerticalOptions="Center" HorizontalOptions="Center" />
-                            <Label Grid.Column="2" Text="{Binding WarningTime}" FontSize="14" VerticalOptions="Center" HorizontalOptions="Center" />
-                            <Label Grid.Column="3" Text="{Binding KillTime}" FontSize="14" VerticalOptions="Center" HorizontalOptions="Center" />
-                            <Label Grid.Column="4" Text="{Binding IsWebsite}" FontSize="14" VerticalOptions="Center" HorizontalOptions="Center" />
+                        <Grid Style="{StaticResource RowGridStyle}" ColumnDefinitions="*,*,*,*,*,*" Padding="5" MinimumHeightRequest="40">
+                            <Label Grid.Column="0" Text="{Binding Name}" FontSize="14" VerticalOptions="Center" HorizontalOptions="Center" TextColor="White" />
+                            <Label Grid.Column="1" Text="{Binding Path}" FontSize="14" VerticalOptions="Center" HorizontalOptions="Center" TextColor="White" />
+                            <Label Grid.Column="2" Text="{Binding WarningTime}" FontSize="14" VerticalOptions="Center" HorizontalOptions="Center" TextColor="White" />
+                            <Label Grid.Column="3" Text="{Binding KillTime}" FontSize="14" VerticalOptions="Center" HorizontalOptions="Center" TextColor="White" />
+                            <Label Grid.Column="4" Text="{Binding IsWebsite}" FontSize="14" VerticalOptions="Center" HorizontalOptions="Center" TextColor="White" />
                             <CheckBox Grid.Column="5" IsChecked="{Binding Ignore}" VerticalOptions="Center" HorizontalOptions="Center" />
                         </Grid>
                     </DataTemplate>
