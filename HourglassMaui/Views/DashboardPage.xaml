@@ -19,7 +19,7 @@
             <CollectionView Grid.Row="1" Grid.ColumnSpan="6" ItemsSource="{Binding Limits}" SelectionMode="Single" SelectedItem="{Binding SelectedLimit}">
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
-                        <Grid Style="{StaticResource RowGridStyle}" ColumnDefinitions="*,*,*,*,*,*" Padding="5" MinimumHeightRequest="40">
+                        <Grid ColumnDefinitions="*,*,*,*,*,*" Padding="5" MinimumHeightRequest="40">
                             <Label Grid.Column="0" Text="{Binding Name}" FontSize="14" VerticalOptions="Center" HorizontalOptions="Center" TextColor="White" />
                             <Label Grid.Column="1" Text="{Binding Path}" FontSize="14" VerticalOptions="Center" HorizontalOptions="Center" TextColor="White" />
                             <Label Grid.Column="2" Text="{Binding WarningTime}" FontSize="14" VerticalOptions="Center" HorizontalOptions="Center" TextColor="White" />
