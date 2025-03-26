@@ -3,42 +3,44 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="HourglassMaui.Views.DashboardPage"
              Title="Dashboard">
-    <VerticalStackLayout Spacing="10" Padding="20">
-        <Label Text="Dashboard" FontSize="24" FontAttributes="Bold" HorizontalOptions="Center" />
+    <Grid RowDefinitions="*,Auto" Padding="20">
+        <VerticalStackLayout Grid.Row="0" Spacing="10" Padding="20">
+            <Label Text="Dashboard" FontSize="24" FontAttributes="Bold" HorizontalOptions="Center" />
 
-        <!-- Header Row -->
-        <Grid Style="{DynamicResource HeaderGridStyle}" ColumnDefinitions="*,*,*,*,*,*" RowDefinitions="Auto,Auto">
-            <Label Grid.Column="0" Text="Application Name" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" />
-            <Label Grid.Column="1" Text="Path" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" />
-            <Label Grid.Column="2" Text="Warning Time" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" />
-            <Label Grid.Column="3" Text="Kill Time" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" />
-            <Label Grid.Column="4" Text="IsWebsite" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" />
-            <Label Grid.Column="5" Text="Ignore Limit" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" />
+            <!-- Header Row -->
+            <Grid Style="{DynamicResource HeaderGridStyle}" ColumnDefinitions="*,*,*,*,*,*" RowDefinitions="Auto,Auto">
+                <Label Grid.Column="0" Text="Application Name" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" />
+                <Label Grid.Column="1" Text="Path" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" />
+                <Label Grid.Column="2" Text="Warning Time" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" />
+                <Label Grid.Column="3" Text="Kill Time" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" />
+                <Label Grid.Column="4" Text="IsWebsite" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" />
+                <Label Grid.Column="5" Text="Ignore Limit" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" />
 
-            <!-- CollectionView for Limits -->
-            <CollectionView Grid.Row="1" Grid.ColumnSpan="6" ItemsSource="{Binding Limits}" SelectionMode="Single" SelectedItem="{Binding SelectedLimit}">
-                <CollectionView.ItemTemplate>
-                    <DataTemplate>
-                        <Grid ColumnDefinitions="*,*,*,*,*,*" Padding="5" MinimumHeightRequest="40">
-                            <Label Grid.Column="0" Text="{Binding Name}" FontSize="14" VerticalOptions="Center" HorizontalOptions="Center" TextColor="White" />
-                            <Label Grid.Column="1" Text="{Binding Path}" FontSize="14" VerticalOptions="Center" HorizontalOptions="Center" TextColor="White" />
-                            <Label Grid.Column="2" Text="{Binding WarningTime}" FontSize="14" VerticalOptions="Center" HorizontalOptions="Center" TextColor="White" />
-                            <Label Grid.Column="3" Text="{Binding KillTime}" FontSize="14" VerticalOptions="Center" HorizontalOptions="Center" TextColor="White" />
-                            <Label Grid.Column="4" Text="{Binding IsWebsite}" FontSize="14" VerticalOptions="Center" HorizontalOptions="Center" TextColor="White" />
-                            <CheckBox Grid.Column="5" IsChecked="{Binding Ignore}" VerticalOptions="Center" HorizontalOptions="Center" />
-                        </Grid>
-                    </DataTemplate>
-                </CollectionView.ItemTemplate>
-            </CollectionView>
-        </Grid>
+                <!-- CollectionView for Limits -->
+                <CollectionView Grid.Row="1" Grid.ColumnSpan="6" ItemsSource="{Binding Limits}" SelectionMode="Single" SelectedItem="{Binding SelectedLimit}">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Grid ColumnDefinitions="*,*,*,*,*,*" Padding="5" MinimumHeightRequest="40">
+                                <Label Grid.Column="0" Text="{Binding Name}" FontSize="14" VerticalOptions="Center" HorizontalOptions="Center" TextColor="White" />
+                                <Label Grid.Column="1" Text="{Binding Path}" FontSize="14" VerticalOptions="Center" HorizontalOptions="Center" TextColor="White" />
+                                <Label Grid.Column="2" Text="{Binding WarningTime}" FontSize="14" VerticalOptions="Center" HorizontalOptions="Center" TextColor="White" />
+                                <Label Grid.Column="3" Text="{Binding KillTime}" FontSize="14" VerticalOptions="Center" HorizontalOptions="Center" TextColor="White" />
+                                <Label Grid.Column="4" Text="{Binding IsWebsite}" FontSize="14" VerticalOptions="Center" HorizontalOptions="Center" TextColor="White" />
+                                <CheckBox Grid.Column="5" IsChecked="{Binding Ignore}" VerticalOptions="Center" HorizontalOptions="Center" />
+                            </Grid>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </Grid>
+        </VerticalStackLayout>
 
         <!-- Action Buttons -->
-        <HorizontalStackLayout Spacing="10" HorizontalOptions="Center" Margin="0,20,0,0">
+        <HorizontalStackLayout Grid.Row="1" Spacing="10" HorizontalOptions="Center" Margin="0,20,0,0" VerticalOptions="End">
             <Button Text="Set Limits" Command="{Binding SetLimitsCommand}" IsEnabled="{Binding IsLimitSelected}" WidthRequest="150" />
             <Button Text="Add" Command="{Binding ShowAddOptionsCommand}" WidthRequest="150" />
             <Button Text="Remove" Command="{Binding RemoveCommand}" IsEnabled="{Binding IsLimitSelected}" WidthRequest="150" />
             <Button Text="Manage Messages" Command="{Binding ManageMessagesCommand}" WidthRequest="150" />
             <Button Text="Settings" Command="{Binding SettingsCommand}" WidthRequest="150" />
         </HorizontalStackLayout>
-    </VerticalStackLayout>
+    </Grid>
 </ContentPage>
