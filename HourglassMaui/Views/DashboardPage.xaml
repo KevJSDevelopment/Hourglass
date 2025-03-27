@@ -39,7 +39,6 @@
             <Button Text="Set Limits" Command="{Binding SetLimitsCommand}" IsEnabled="{Binding IsLimitSelected}" WidthRequest="150" />
             <Button Text="Add" Command="{Binding ShowAddOptionsCommand}" WidthRequest="150" />
             <Button Text="Remove" Command="{Binding RemoveCommand}" IsEnabled="{Binding IsLimitSelected}" WidthRequest="150" />
-            <Button Text="Manage Messages" Command="{Binding ManageMessagesCommand}" WidthRequest="150" />
             <Button Text="Settings" Command="{Binding SettingsCommand}" WidthRequest="150" />
         </HorizontalStackLayout>
     </Grid>
