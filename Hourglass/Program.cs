@@ -53,7 +53,7 @@ internal class Program
             builder.Services.AddSingleton<IWebSocketCommunicator, WebSocketServerService>();
             builder.Services.AddHostedService(sp => (WebSocketServerService)sp.GetRequiredService<IWebSocketCommunicator>());
             builder.Services.AddSingleton<IWebsiteTracker, WebsiteTracker>(); // Updated to interface
-            builder.Services.AddSingleton<IUsageTracker, WindowsUsageTracker>(); // Added for Worker
+            //builder.Services.AddSingleton<IUsageTracker, WindowsUsageTracker>(); // Added for Worker
             builder.Services.AddHostedService<Worker>();
 
             var host = builder.Build();

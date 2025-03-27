@@ -1,4 +1,5 @@
 ﻿// HourglassMaui/Services/UsageTrackingService.cs
+using HourglassLibrary;
 using HourglassLibrary.Data;
 using HourglassLibrary.Interfaces;
 using HourglassMaui.Views;
@@ -108,7 +109,7 @@ namespace HourglassMaui.Services
                         }
                     }
 
-                    string processName = limit.IsWebsite ? GetDomainFromUrl(limit.Path) : Path.GetFileNameWithoutExtension(limit.Path);
+                    string processName = limit.IsWebsite ? UrlHandler.GetDomainFromUrl(limit.Path) : Path.GetFileNameWithoutExtension(limit.Path);
                     _processToPathMap[processName] = limit.Path;
                 }
 
@@ -121,21 +122,12 @@ namespace HourglassMaui.Services
             }
         }
 
-        private string GetDomainFromUrl(string url)
-        {
-            if (Uri.TryCreate(url, UriKind.Absolute, out Uri? uri))
-            {
-                return uri.Host.ToLower().Replace("www.", "");
-            }
-            return url.ToLower();
-        }
-
         private async void ShowWarningMessage(string executablePath)
         {
             _logger.LogDebug("Starting ShowWarningMessage for {Path}", executablePath);
             var timeRemaining = _appLimits[executablePath] - _appLimits[executablePath + "warning"];
             var displayName = Uri.IsWellFormedUriString(executablePath, UriKind.Absolute)
-                ? GetDomainFromUrl(executablePath)
+                ? UrlHandler.GetDomainFromUrl(executablePath)
                 : Path.GetFileNameWithoutExtension(executablePath);
             var warning = timeRemaining >= TimeSpan.FromMinutes(1)
                 ? $"WARNING: You have been using {displayName} for an extended period. The application will close in {timeRemaining.Minutes} minutes once you select OK and usage continues."

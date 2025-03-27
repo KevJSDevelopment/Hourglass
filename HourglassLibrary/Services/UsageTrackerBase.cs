@@ -58,7 +58,7 @@ namespace HourglassLibrary.Services
                             if (Uri.IsWellFormedUriString(baseApp, UriKind.Absolute))
                             {
                                 _logger.LogInformation("Website limit exceeded for {Domain}", baseApp);
-                                await communicator.SendCloseTabCommand(GetDomainFromUrl(baseApp));
+                                await communicator.SendCloseTabCommand(UrlHandler.GetDomainFromUrl(baseApp));
                             }
                             else
                             {
@@ -83,13 +83,6 @@ namespace HourglassLibrary.Services
         {
             // Default implementation (override in platform-specific classes)
             return Task.CompletedTask;
-        }
-
-        protected string GetDomainFromUrl(string url)
-        {
-            if (Uri.TryCreate(url, UriKind.Absolute, out Uri uri))
-                return uri.Host.ToLower().Replace("www.", "");
-            return url.ToLower();
         }
     }
 }

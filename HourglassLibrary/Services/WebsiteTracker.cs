@@ -18,15 +18,6 @@ namespace HourglassLibrary.Services
             _logger = logger;
         }
 
-        private string GetDomainFromUrl(string url)
-        {
-            if (Uri.TryCreate(url, UriKind.Absolute, out Uri? uri))
-            {
-                return uri.Host.ToLower().Replace("www.", "");
-            }
-            return url.ToLower();
-        }
-
         public void UpdateUrls(IEnumerable<string> urls)
         {
             _lock.EnterWriteLock();
@@ -36,7 +27,7 @@ namespace HourglassLibrary.Services
                 _activeUrls.Clear();
                 foreach (var url in urls)
                 {
-                    var domain = GetDomainFromUrl(url);
+                    var domain = UrlHandler.GetDomainFromUrl(url);
                     _logger.LogDebug("Processing URL {Url} with domain {Domain}", url, domain);
                     if (!_activeUrls.ContainsKey(domain))
                         _activeUrls[domain] = new HashSet<string>();
@@ -56,7 +47,7 @@ namespace HourglassLibrary.Services
             _lock.EnterReadLock();
             try
             {
-                var domain = GetDomainFromUrl(domainOrUrl);
+                var domain = UrlHandler.GetDomainFromUrl(domainOrUrl);
                 var isActive = _activeUrls.ContainsKey(domain);
                 _logger.LogDebug("Checking if domain {Domain} is active: {IsActive}", domain, isActive);
                 return isActive;

@@ -1,4 +1,5 @@
 ﻿// HourglassMaui/Platforms/Windows/WindowsUsageTracker.cs
+using HourglassLibrary;
 using HourglassLibrary.Interfaces;
 using HourglassLibrary.Services;
 using Microsoft.Extensions.Logging;
@@ -52,7 +53,7 @@ namespace HourglassMaui
             {
                 var websiteLimits = processToPathMap
                     .Where(kvp => Uri.IsWellFormedUriString(kvp.Value, UriKind.Absolute))
-                    .Select(kvp => new { OriginalUrl = kvp.Value, Domain = GetDomainFromUrl(kvp.Value) })
+                    .Select(kvp => new { OriginalUrl = kvp.Value, Domain = UrlHandler.GetDomainFromUrl(kvp.Value) })
                     .ToList();
 
                 foreach (var website in websiteLimits)

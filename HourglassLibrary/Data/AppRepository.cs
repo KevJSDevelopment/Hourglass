@@ -9,6 +9,8 @@ namespace HourglassLibrary.Data
             if (string.IsNullOrEmpty(processInfo.KillTime)) processInfo.KillTime = "00:00:00";
             if (string.IsNullOrEmpty(processInfo.WarningTime)) processInfo.WarningTime = "00:00:00";
 
+            if(processInfo.IsWebsite) processInfo.Path = UrlHandler.GetDomainFromUrl(processInfo.Path);
+
             var sql = @"
                 IF NOT EXISTS (SELECT 1 FROM UserComputers WHERE ComputerId = @ComputerId)
                     INSERT INTO UserComputers (ComputerId, ComputerName)
