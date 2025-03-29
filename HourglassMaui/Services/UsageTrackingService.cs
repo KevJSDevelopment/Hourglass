@@ -19,7 +19,6 @@ namespace HourglassMaui.Services
         private readonly IWebsiteTracker _websiteTracker;
         private readonly IWebSocketCommunicator _webSocketCommunicator;
         private readonly AppRepository _appRepo; // Add dependency
-        private readonly MotivationalMessageRepository _messageRepo;
         private readonly Dictionary<string, TimeSpan> _appUsage = new();
         private readonly Dictionary<string, TimeSpan> _appLimits = new();
         private readonly Dictionary<string, string> _processToPathMap = new(StringComparer.OrdinalIgnoreCase);
@@ -31,15 +30,13 @@ namespace HourglassMaui.Services
             IUsageTracker usageTracker,
             IWebsiteTracker websiteTracker,
             IWebSocketCommunicator webSocketCommunicator,
-            AppRepository appRepo,
-            MotivationalMessageRepository messageRepo) // Inject AppRepository
+            AppRepository appRepo) // Inject AppRepository
         {
             _logger = logger;
             _usageTracker = usageTracker;
             _websiteTracker = websiteTracker;
             _webSocketCommunicator = webSocketCommunicator;
             _appRepo = appRepo;
-            _messageRepo = messageRepo;
             _computerId = ComputerIdentifier.GetUniqueIdentifier(); // Ensure ComputerIdentifier is available
         }
 
@@ -133,7 +130,7 @@ namespace HourglassMaui.Services
                 ? $"WARNING: You have been using {displayName} for an extended period. The application will close in {timeRemaining.Minutes} minutes once you select OK and usage continues."
                 : $"WARNING: You have been using {displayName} for an extended period. The application will close in {timeRemaining.Seconds} seconds once you select OK and usage continues.";
 
-            var messages = await _messageRepo.GetMessagesForComputer(_computerId); // Async call
+            /*var messages = await _messageRepo.GetMessagesForComputer(_computerId); // Async call
             if (messages == null || !messages.Any())
             {
                 _logger.LogWarning("No motivational messages found for computer {ComputerId}", _computerId);
@@ -146,6 +143,7 @@ namespace HourglassMaui.Services
                 await Application.Current.MainPage.Navigation.PushModalAsync(new WarningPage(warning, message));
             });
             _logger.LogDebug("Finished ShowWarningMessage for {Path}", executablePath);
+            */
         }
     }
 }

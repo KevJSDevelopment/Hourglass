@@ -37,14 +37,11 @@ namespace HourglassMaui
                 logging.AddConsole();
             });
             builder.Services.AddSingleton<AppRepository>();
-            builder.Services.AddSingleton<MotivationalMessageRepository>();
             builder.Services.AddSingleton<IWebsiteTracker, WebsiteTracker>();
             // Note: WebSocketCommunicator is not yet implemented, commenting out for now
             // builder.Services.AddSingleton<IWebSocketCommunicator, WebSocketCommunicator>();
             builder.Services.AddHostedService<UsageTrackingService>();
             builder.Services.AddSingleton<DashboardViewModel>();
-            builder.Services.AddSingleton<MotivationalMessagesViewModel>();
-            builder.Services.AddSingleton<AddMessageViewModel>(); // Can be transient if preferred
 
             // Register platform-specific IUsageTracker implementations
             builder.Services.AddSingleton<IUsageTracker>(provider =>

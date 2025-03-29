@@ -79,13 +79,6 @@ namespace HourglassMaui.ViewModels
         }
 
         [RelayCommand]
-        private async Task ManageMessages()
-        {
-            var messagesViewModel = Application.Current.MainPage.Handler.MauiContext.Services.GetRequiredService<MotivationalMessagesViewModel>();
-            await Application.Current.MainPage.Navigation.PushAsync(new MotivationalMessagesPage(messagesViewModel));
-        }
-
-        [RelayCommand]
         private async Task Settings()
         {
             await Application.Current.MainPage.DisplayAlert("Settings", "Settings page not implemented yet.", "OK");
