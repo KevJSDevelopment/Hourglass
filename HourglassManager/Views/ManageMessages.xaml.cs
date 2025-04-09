@@ -1,6 +1,6 @@
 ﻿using HourglassManager.WPF.ViewModels;
 using System.Windows;
-
+/*
 namespace HourglassManager.WPF.Views
 {
     /// <summary>
@@ -41,3 +41,4 @@ namespace HourglassManager.WPF.Views
         }
     }
 }
+*/

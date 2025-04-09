@@ -7,7 +7,7 @@ using HourglassMessaging.WPF.ViewModels;
 using HourglassMessaging.WPF.Commands;
 using System.Windows.Threading;
 using HourglassLibrary.Services;
-
+/*
 public class MessagingViewModel : ViewModelBase, IDisposable
 {
     private readonly string _processName;
@@ -235,3 +235,4 @@ public class MessagingViewModel : ViewModelBase, IDisposable
         _audioService?.Dispose();
     }
 }
+*/

@@ -11,7 +11,7 @@ using NAudio.Wave;
 using HourglassManager.WPF.Commands;
 using HourglassManager.WPF.Interfaces;
 using HourglassManager.WPF.Views;
-
+/*
 namespace HourglassManager.WPF.ViewModels
 {
     public class ManageMessagesViewModel : ViewModelBase
@@ -385,3 +385,4 @@ namespace HourglassManager.WPF.ViewModels
         }
     }
 }
+*/

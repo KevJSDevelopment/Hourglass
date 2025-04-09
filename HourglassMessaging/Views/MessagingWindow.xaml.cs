@@ -2,7 +2,7 @@
 using HourglassLibrary.Data;
 using HourglassLibrary.Dtos;
 using HourglassMessaging.WPF.ViewModels;
-
+/*
 namespace HourglassMessaging.WPF.Views
 {
     public partial class MessagingWindow : Window
@@ -46,3 +46,4 @@ namespace HourglassMessaging.WPF.Views
         }
     }
 }
+*/

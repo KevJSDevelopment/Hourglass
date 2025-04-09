@@ -10,7 +10,8 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using System.Windows.Threading;
+using System.Windows.Threading; 
+/*
 namespace HourglassMessaging.WPF.Services
 {
     public class WarningWindowManager
@@ -114,3 +115,4 @@ namespace HourglassMessaging.WPF.Services
         }
     }
 }
+*/

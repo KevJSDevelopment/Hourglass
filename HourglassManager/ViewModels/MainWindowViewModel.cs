@@ -122,8 +122,8 @@ namespace HourglassManager.WPF.ViewModels
 
         private void ManageMessages()
         {
-            var messagesWindow = new ManageMessages(_computerId);
-            messagesWindow.ShowDialog();
+            //var messagesWindow = new ManageMessages(_computerId);
+            //messagesWindow.ShowDialog();
         }
 
         private void OpenSettings()

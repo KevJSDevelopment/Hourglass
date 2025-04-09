@@ -1,8 +1,8 @@
 // Hourglass/Worker.cs
 using HourglassLibrary.Data;
 using HourglassLibrary.Interfaces;
-using HourglassMessaging.WPF.Services;
-
+//using HourglassMessaging.WPF.Services;
+/*
 namespace Hourglass
 {
     public class Worker : BackgroundService
@@ -34,7 +34,7 @@ namespace Hourglass
             _websiteTracker = websiteTracker;
             _webSocketCommunicator = webSocketCommunicator;
             _appRepo = new AppRepository();
-            _messageRepo = new MotivationalMessageRepository();
+            //_messageRepo = new MotivationalMessageRepository();
             _computerId = ComputerIdentifier.GetUniqueIdentifier();
             _settingsRepository = new SettingsRepository(_computerId);
         }
@@ -203,3 +203,4 @@ namespace Hourglass
         }
     }
 }
+*/

@@ -4,7 +4,7 @@ using System.Collections.ObjectModel;
 using System.Text;
 using System.Windows.Input;
 
-
+/*
 namespace HourglassManager.WPF.ViewModels
 {
     public class EditGoalViewModel : ViewModelBase
@@ -227,3 +227,4 @@ namespace HourglassManager.WPF.ViewModels
         public event Action<bool> RequestClose;
     }
 }
+*/
